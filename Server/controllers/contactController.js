@@ -1,0 +1,275 @@
+import mongoose from "mongoose";
+import Contact from "../models/Contact.js";
+import { sendContactNotification } from "../services/emailService.js";
+// Submit Contact Message (Public)
+export const createContact = async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    if (
+      !name?.trim() ||
+      !email?.trim() ||
+      !subject?.trim() ||
+      !message?.trim()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid email address.",
+      });
+    }
+
+    if (
+      name.trim().length > 100 ||
+      email.trim().length > 150 ||
+      subject.trim().length > 200 ||
+      message.trim().length > 3000
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "One or more fields exceed the allowed length.",
+      });
+    }
+
+    const contact = await Contact.create({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      subject: subject.trim(),
+      message: message.trim(),
+      ipAddress: req.ip || "",
+      userAgent: req.get("user-agent") || "",
+    });
+
+    // Send Email Notification
+await sendContactNotification(contact);
+
+    // Real-time notification to connected admin dashboard
+    req.app.get("io")?.emit("new-contact-message", {
+      id: contact._id,
+      name: contact.name,
+      subject: contact.subject,
+      createdAt: contact.createdAt,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Your message has been sent successfully.",
+      contactId: contact._id,
+    });
+  } catch (error) {
+    console.error("Create Contact Error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send your message. Please try again.",
+    });
+  }
+};
+
+// Get All Contact Messages (Admin)
+export const getAllContacts = async (req, res) => {
+  try {
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(
+      50,
+      Math.max(1, Number.parseInt(req.query.limit, 10) || 10),
+    );
+
+    const { status, search } = req.query;
+
+    const filter = {};
+
+    if (status) {
+      const allowedStatuses = ["new", "read", "replied", "archived"];
+
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid message status.",
+        });
+      }
+
+      filter.status = status;
+    }
+
+    if (search?.trim()) {
+      const keyword = search.trim().slice(0, 100);
+
+      filter.$or = [
+        { name: { $regex: keyword, $options: "i" } },
+        { email: { $regex: keyword, $options: "i" } },
+        { subject: { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    const total = await Contact.countDocuments(filter);
+
+    const contacts = await Contact.find(filter)
+      .select("-ipAddress -userAgent")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return res.status(200).json({
+      success: true,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+      contacts,
+    });
+  } catch (error) {
+    console.error("Get Contacts Error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch contact messages.",
+    });
+  }
+};
+
+// Get Single Contact Message (Admin)
+export const getContactById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message ID.",
+      });
+    }
+
+    const contact = await Contact.findById(id).select("-ipAddress -userAgent");
+
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: "Contact message not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      contact,
+    });
+  } catch (error) {
+    console.error("Get Contact Error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch contact message.",
+    });
+  }
+};
+
+// Update Contact Message (Admin)
+export const updateContact = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message ID.",
+      });
+    }
+
+    const contact = await Contact.findById(id);
+
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: "Contact message not found.",
+      });
+    }
+
+    const allowedStatuses = ["new", "read", "replied", "archived"];
+
+    const { status, isStarred } = req.body;
+
+    if (status !== undefined && !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message status.",
+      });
+    }
+
+    if (isStarred !== undefined && typeof isStarred !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "isStarred must be a boolean.",
+      });
+    }
+
+    if (status !== undefined) {
+      contact.status = status;
+
+      if (status === "replied" && !contact.repliedAt) {
+        contact.repliedAt = new Date();
+      }
+    }
+
+    if (isStarred !== undefined) {
+      contact.isStarred = isStarred;
+    }
+
+    await contact.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Contact message updated successfully.",
+      contact,
+    });
+  } catch (error) {
+    console.error("Update Contact Error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update contact message.",
+    });
+  }
+};
+
+// Delete Contact Message (Admin)
+export const deleteContact = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid message ID.",
+      });
+    }
+
+    const contact = await Contact.findByIdAndDelete(id);
+
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: "Contact message not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Contact message deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Delete Contact Error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete contact message.",
+    });
+  }
+};
