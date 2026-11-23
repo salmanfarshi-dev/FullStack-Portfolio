@@ -34,6 +34,25 @@ const adminSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Session Invalidation
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+
+    // Password Reset Security
+    resetPasswordToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
   {
     timestamps: true,

@@ -19,6 +19,7 @@ const protectAdmin = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const admin = await Admin.findById(decoded.id);
+    
 
     if (!admin || !admin.isActive) {
       return res.status(401).json({
@@ -26,7 +27,12 @@ const protectAdmin = async (req, res, next) => {
         message: "Admin account not found or inactive.",
       });
     }
-
+if (decoded.tokenVersion !== admin?.tokenVersion) {
+  return res.status(401).json({
+    success: false,
+    message: "Session expired. Please login again.",
+  });
+}
     req.admin = admin;
 
     next();

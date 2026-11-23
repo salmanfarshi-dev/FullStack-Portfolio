@@ -1,10 +1,20 @@
+
 import Admin from "../models/Admin.js";
+
+const COOKIE_NAME = "admin_token";
+
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+});
 
 // Get Admin Profile
 export const getAdminProfile = async (req, res) => {
   try {
     const admin = await Admin.findById(req.admin._id).select(
-      "name email isActive lastLoginAt createdAt",
+      "name email isActive lastLoginAt createdAt"
     );
 
     if (!admin) {
@@ -69,7 +79,6 @@ export const updateAdminProfile = async (req, res) => {
       }
 
       const normalizedEmail = email.trim().toLowerCase();
-
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailRegex.test(normalizedEmail)) {
@@ -125,7 +134,10 @@ export const changeAdminPassword = async (req, res) => {
     if (
       typeof currentPassword !== "string" ||
       typeof newPassword !== "string" ||
-      typeof confirmPassword !== "string"
+      typeof confirmPassword !== "string" ||
+      !currentPassword ||
+      !newPassword ||
+      !confirmPassword
     ) {
       return res.status(400).json({
         success: false,
@@ -154,6 +166,13 @@ export const changeAdminPassword = async (req, res) => {
       });
     }
 
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be different from current password.",
+      });
+    }
+
     const admin = await Admin.findById(req.admin._id).select("+password");
 
     if (!admin) {
@@ -172,20 +191,20 @@ export const changeAdminPassword = async (req, res) => {
       });
     }
 
-    if (currentPassword === newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "New password must be different from current password.",
-      });
-    }
-
+    // Update password
     admin.password = newPassword;
+
+    // Invalidate all previously issued JWT tokens
+    admin.tokenVersion = (admin.tokenVersion ?? 0) + 1;
 
     await admin.save();
 
+    // Clear the current authentication cookie
+    res.clearCookie(COOKIE_NAME, getCookieOptions());
+
     return res.status(200).json({
       success: true,
-      message: "Password changed successfully. Please log in again.",
+      message: "Password changed successfully. Please login again.",
     });
   } catch (error) {
     console.error("Change Admin Password Error:", error.message);

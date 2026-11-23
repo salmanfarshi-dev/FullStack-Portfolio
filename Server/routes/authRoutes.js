@@ -5,17 +5,37 @@ import {
   loginAdmin,
   getCurrentAdmin,
   logoutAdmin,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/authController.js";
 
 import protectAdmin from "../middleware/authMiddleware.js";
+import authRateLimiter from "../middleware/authRateLimiter.js";
+import passwordResetRateLimiter from "../middleware/passwordResetRateLimiter.js";
 
 const router = express.Router();
 
-// Public login endpoint
-router.post("/login", loginAdmin);
+// Admin Login
+router.post("/login", authRateLimiter, loginAdmin);
 
-// Protected endpoints
+// Forgot Password
+router.post(
+  "/forgot-password",
+  passwordResetRateLimiter,
+  forgotPassword
+);
+
+// Reset Password
+router.post(
+  "/reset-password",
+  passwordResetRateLimiter,
+  resetPassword
+);
+
+// Get Current Admin
 router.get("/me", protectAdmin, getCurrentAdmin);
+
+// Admin Logout
 router.post("/logout", protectAdmin, logoutAdmin);
 
 export default router;
