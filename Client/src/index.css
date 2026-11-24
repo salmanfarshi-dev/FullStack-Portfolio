@@ -1,58 +1,108 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 @import "tailwindcss";
 
-@theme {
-  /* Typography */
-  --font-heading: "Space Grotesk", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-
-  /* Brand Colors */
+:root {
+  /* Background Colors */
   --color-background: #080D1B;
   --color-surface: #111B32;
+  --color-surface-hover: #192642;
+
+  /* Brand Colors */
   --color-primary: #22D3EE;
   --color-secondary: #8B5CF6;
 
   /* Text Colors */
-  --color-foreground: #F8FAFC;
+  --color-text: #F8FAFC;
   --color-muted: #AAB3C7;
 
-  /* Borders */
+  /* Border Colors */
   --color-border: #26334D;
-}
 
-:root {
-  color-scheme: dark;
+  /* Status Colors */
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+
+  /* Fonts */
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  
   font-family: var(--font-body);
-  background: #080D1B;
-  color: #F8FAFC;
+  color: var(--color-text);
+  background: var(--color-background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 body {
-  margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
 }
 
-button, a {
-  -webkit-tap-highlight-color: transparent;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
-::selection {
-  background: #22D3EE;
-  color: #080D1B;
+button, input, textarea {
+  font: inherit;
+}
+
+
+/* ========================================
+   ADMIN DASHBOARD - LIGHT THEME
+======================================== */
+
+.admin-theme {
+  --color-background: #F5F7FB;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F1F5F9;
+
+  --color-primary: #0891B2;
+  --color-secondary: #7C3AED;
+
+  --color-text: #0F172A;
+  --color-muted: #64748B;
+
+  --color-border: #E2E8F0;
+
+  --color-success: #16A34A;
+  --color-danger: #DC2626;
+  --color-warning: #D97706;
+
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+/* ========================================
+   ADMIN DASHBOARD - DARK THEME
+======================================== */
+
+.admin-theme[data-theme="dark"] {
+  --color-background: #080D1B;
+  --color-surface: #111B32;
+  --color-surface-hover: #192642;
+
+  --color-primary: #22D3EE;
+  --color-secondary: #8B5CF6;
+
+  --color-text: #F8FAFC;
+  --color-muted: #AAB3C7;
+
+  --color-border: #26334D;
+
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
 }
