@@ -21,7 +21,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import backupRoutes from "./routes/backupRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 
-
+import "dotenv/config";
 
 const app = express();
 
@@ -29,9 +29,10 @@ const app = express();
 app.use(helmet());
 
 // CORS
+// CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   }),
 );

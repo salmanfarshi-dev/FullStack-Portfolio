@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { forgotPassword } from "../../features/auth/authService";
+import AuthLayout from "../../components/auth/AuthLayout";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -14,12 +15,14 @@ const ForgotPassword = () => {
     setError("");
     setSuccess("");
 
-    if (!email.trim()) {
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail) {
       setError("Please enter your email address.");
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -27,7 +30,7 @@ const ForgotPassword = () => {
     try {
       setLoading(true);
 
-      const response = await forgotPassword(email.trim());
+      const response = await forgotPassword(cleanEmail);
 
       setSuccess(
         response.message ||
@@ -41,59 +44,69 @@ const ForgotPassword = () => {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-background)] px-4 py-10 text-[var(--color-text)]">
-      {/* Background Effects */}
-      <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-[var(--color-primary)] opacity-[0.07] blur-[120px]" />
-
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-[var(--color-secondary)] opacity-[0.10] blur-[120px]" />
-
-      {/* Main Card */}
-      <section className="relative z-10 w-full max-w-md rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-7 shadow-2xl sm:p-10">
-        {/* Brand */}
-        <Link to="/" className="text-xl font-bold tracking-tight">
-          SALMAN FARSHI
-          <span className="text-[var(--color-primary)]">.</span>
+    <AuthLayout
+      eyebrow="Account Recovery"
+      title="Forgot Password?"
+      description="No worries. Enter your registered email address and we'll help you securely recover access to your admin account."
+      panelTitle={
+        <>
+          A fresh start
+          <br />
+          is just one step away.
+        </>
+      }
+      panelDescription="Your account security matters. Use our secure password recovery process to regain access to your personal admin workspace."
+      icon={
+        <svg
+          width="30"
+          height="30"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="m3 7 9 6 9-6" />
+          <path d="M16 16h5" />
+        </svg>
+      }
+      footer={
+        <Link
+          to="/admin/login"
+          className="text-sm font-semibold text-[var(--color-muted)] transition hover:text-[var(--color-primary)]"
+        >
+          ← Back to Login
         </Link>
-
-        {/* Icon */}
-        <div className="mb-7 mt-12 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-primary)]">
-          <svg
-            width="27"
-            height="27"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label
+            htmlFor="forgot-email"
+            className="mb-2.5 block text-sm font-semibold"
           >
-            <rect x="3" y="5" width="18" height="14" rx="2" />
-            <path d="m3 7 9 6 9-6" />
-            <path d="M16 16h5" />
-          </svg>
-        </div>
+            Email Address
+          </label>
 
-        {/* Heading */}
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">
-          Account Recovery
-        </p>
-
-        <h1 className="text-3xl font-bold">Forgot Password?</h1>
-
-        <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-          No worries! Enter your registered admin email address and we will send
-          you a password reset link.
-        </p>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-          <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium">
-              Email Address
-            </label>
+          <div className="auth-input-wrap">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="m3 7 9 6 9-6" />
+            </svg>
 
             <input
-              id="email"
+              id="forgot-email"
               type="email"
               autoComplete="email"
               placeholder="Enter your registered email"
@@ -104,61 +117,62 @@ const ForgotPassword = () => {
                 setSuccess("");
               }}
               disabled={loading}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-4 text-sm text-[var(--color-text)] outline-none transition placeholder:text-[var(--color-muted)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
             />
           </div>
-
-          {/* Error */}
-          {error && (
-            <div
-              role="alert"
-              className="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 px-4 py-3 text-sm text-[var(--color-danger)]"
-            >
-              {error}
-            </div>
-          )}
-
-          {/* Success */}
-          {success && (
-            <div
-              role="status"
-              className="rounded-xl border border-[var(--color-success)]/30 bg-[var(--color-success)]/10 px-4 py-3 text-sm leading-6 text-[var(--color-success)]"
-            >
-              {success}
-            </div>
-          )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[var(--color-primary)] px-5 py-4 text-sm font-bold text-[var(--color-background)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Sending...
-              </>
-            ) : (
-              <>
-                Send Reset Link
-                <span aria-hidden="true">→</span>
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Back to Login */}
-        <div className="mt-8 border-t border-[var(--color-border)] pt-6 text-center">
-          <Link
-            to="/admin/login"
-            className="text-sm font-medium text-[var(--color-muted)] transition hover:text-[var(--color-primary)]"
-          >
-            ← Back to Login
-          </Link>
         </div>
-      </section>
-    </main>
+
+        {error && (
+          <div role="alert" className="auth-alert auth-alert-error">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div role="status" className="auth-alert auth-alert-success">
+            <strong className="mb-1 block">✓ Request submitted</strong>
+            {success}
+          </div>
+        )}
+
+        <button type="submit" disabled={loading} className="auth-submit">
+          {loading ? (
+            <>
+              <span className="auth-spinner" />
+              Sending...
+            </>
+          ) : (
+            <>
+              Send Reset Link
+              <span>→</span>
+            </>
+          )}
+        </button>
+
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
+          <div className="flex items-start gap-3">
+            <svg
+              className="mt-0.5 shrink-0 text-[var(--color-primary)]"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+
+            <p className="text-xs leading-6 text-[var(--color-muted)]">
+              For security, reset instructions are provided only through the
+              registered email address.
+            </p>
+          </div>
+        </div>
+      </form>
+    </AuthLayout>
   );
 };
 

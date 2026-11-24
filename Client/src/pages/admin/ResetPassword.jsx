@@ -3,8 +3,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { resetPassword } from "../../features/auth/authService";
 
 const ResetPassword = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const token = searchParams.get("token");
 
@@ -41,22 +41,19 @@ const ResetPassword = () => {
       return;
     }
 
-    if (!formData.password || !formData.confirmPassword) {
-      setError("Please fill in both password fields.");
+    const { password, confirmPassword } = formData;
+
+    if (!password || !confirmPassword) {
+      setError("Please fill in all fields.");
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError("Password must contain at least 8 characters.");
+    if (password.length < 8 || password.length > 128) {
+      setError("Password must be between 8 and 128 characters.");
       return;
     }
 
-    if (formData.password.length > 128) {
-      setError("Password cannot exceed 128 characters.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
@@ -64,15 +61,18 @@ const ResetPassword = () => {
     try {
       setLoading(true);
 
+      // Backend expects newPassword, not password.
       const response = await resetPassword({
         token,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
+        newPassword: password,
+        confirmPassword,
       });
 
-      setSuccess(
-        response.message || "Your password has been reset successfully.",
-      );
+      if (!response?.success) {
+        throw new Error(response?.message || "Unable to reset password.");
+      }
+
+      setSuccess(response.message || "Password reset successfully.");
 
       setFormData({
         password: "",
@@ -83,183 +83,136 @@ const ResetPassword = () => {
         navigate("/admin/login", { replace: true });
       }, 2000);
     } catch (err) {
-      setError(err.message || "Unable to reset your password.");
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-background)] px-4 py-10 text-[var(--color-text)]">
-      {/* Background Effects */}
-      <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-[var(--color-primary)] opacity-[0.07] blur-[120px]" />
-
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-[var(--color-secondary)] opacity-[0.10] blur-[120px]" />
-
-      {/* Main Card */}
-      <section className="relative z-10 w-full max-w-md rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-7 shadow-2xl sm:p-10">
-        {/* Brand */}
-        <Link to="/" className="text-xl font-bold tracking-tight">
-          SALMAN FARSHI
-          <span className="text-[var(--color-primary)]">.</span>
-        </Link>
-
-        {/* Icon */}
-        <div className="mb-7 mt-12 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-primary)]">
-          <svg
-            width="27"
-            height="27"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+    <main className="auth-theme min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <Link
+            to="/admin/login"
+            className="text-2xl font-bold tracking-tight text-white"
           >
-            <rect x="4" y="10" width="16" height="11" rx="2" />
-            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-            <path d="M12 14v3" />
-          </svg>
+            SALMAN FARSHI<span className="text-cyan-400">.</span>
+          </Link>
+
+          <h1 className="mt-8 text-3xl font-bold text-white">Reset Password</h1>
+
+          <p className="mt-3 text-sm text-gray-400">
+            Create a new secure password for your admin account.
+          </p>
         </div>
 
-        {/* Heading */}
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">
-          Account Security
-        </p>
-
-        <h1 className="text-3xl font-bold">Reset Password</h1>
-
-        <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-          Create a new secure password for your admin account. Choose at least 8
-          characters.
-        </p>
-
-        {!token && (
-          <div
-            role="alert"
-            className="mt-6 rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 px-4 py-3 text-sm text-[var(--color-danger)]"
-          >
-            Invalid or missing reset link. Please request a new password reset
-            link.
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-          {/* New Password */}
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-2 block text-sm font-medium"
-            >
-              New Password
-            </label>
-
-            <div className="flex items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-4 transition focus-within:border-[var(--color-primary)] focus-within:ring-2 focus-within:ring-[var(--color-primary)]/10">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                placeholder="Enter new password"
-                value={formData.password}
-                onChange={handleChange}
-                disabled={loading || !token || Boolean(success)}
-                className="w-full bg-transparent py-4 text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-muted)]"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-primary)]"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="mb-2 block text-sm font-medium"
-            >
-              Confirm New Password
-            </label>
-
-            <div className="flex items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-4 transition focus-within:border-[var(--color-primary)] focus-within:ring-2 focus-within:ring-[var(--color-primary)]/10">
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                autoComplete="new-password"
-                placeholder="Confirm new password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                disabled={loading || !token || Boolean(success)}
-                className="w-full bg-transparent py-4 text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-muted)]"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                className="text-xs font-medium text-[var(--color-muted)] hover:text-[var(--color-primary)]"
-              >
-                {showConfirmPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-
-          {/* Error */}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           {error && (
-            <div
-              role="alert"
-              className="rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 px-4 py-3 text-sm text-[var(--color-danger)]"
-            >
+            <div className="mb-5 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
               {error}
             </div>
           )}
 
-          {/* Success */}
           {success && (
-            <div
-              role="status"
-              className="rounded-xl border border-[var(--color-success)]/30 bg-[var(--color-success)]/10 px-4 py-3 text-sm leading-6 text-[var(--color-success)]"
-            >
-              {success} Redirecting to login...
+            <div className="mb-5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+              {success}
+              <p className="mt-1 text-xs">Redirecting you to login...</p>
             </div>
           )}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || !token || Boolean(success)}
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-[var(--color-primary)] px-5 py-4 text-sm font-bold text-[var(--color-background)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? (
-              <>
-                <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Updating Password...
-              </>
-            ) : (
-              <>
-                Reset Password
-                <span aria-hidden="true">→</span>
-              </>
-            )}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-gray-200"
+              >
+                New Password
+              </label>
 
-        {/* Back to Login */}
-        <div className="mt-8 border-t border-[var(--color-border)] pt-6 text-center">
-          <Link
-            to="/admin/login"
-            className="text-sm font-medium text-[var(--color-muted)] transition hover:text-[var(--color-primary)]"
-          >
-            ← Back to Login
-          </Link>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter new password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  maxLength={128}
+                  required
+                  disabled={loading || !!success}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-50"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-cyan-400 hover:text-cyan-300"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="mb-2 block text-sm font-medium text-gray-200"
+              >
+                Confirm New Password
+              </label>
+
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm new password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  maxLength={128}
+                  required
+                  disabled={loading || !!success}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-20 text-sm text-white outline-none transition placeholder:text-gray-500 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-50"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-cyan-400 hover:text-cyan-300"
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !!success}
+              className="flex w-full items-center justify-center rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? "Resetting Password..." : "Reset Password"}
+            </button>
+          </form>
+
+          <div className="mt-6 border-t border-white/10 pt-5 text-center">
+            <Link
+              to="/admin/login"
+              className="text-sm font-medium text-cyan-400 transition hover:text-cyan-300"
+            >
+              Back to Login
+            </Link>
+          </div>
         </div>
-      </section>
+
+        <p className="mt-6 text-center text-xs text-gray-500">
+          © {new Date().getFullYear()} SALMAN FARSHI. All rights reserved.
+        </p>
+      </div>
     </main>
   );
 };

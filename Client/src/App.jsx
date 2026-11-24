@@ -4,12 +4,26 @@ import { AuthProvider } from "./context/AuthContext";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
-
+import Hero from "./pages/admin/Hero";
 import AdminLayout from "./layouts/AdminLayout";
-
+import About from "./pages/admin/About";
+import Dashboard from "./pages/admin/Dashboard";
 import Login from "./pages/admin/Login";
 import ForgotPassword from "./pages/admin/ForgotPassword";
 import ResetPassword from "./pages/admin/ResetPassword";
+import Projects from "./pages/admin/Projects";
+import Skills from "./pages/admin/Skills";
+import Journey from "./pages/admin/Journey";
+import Socials from "./pages/admin/Socials";
+import Messages from "./pages/admin/Messages";
+import Newsletter from "./pages/admin/Newsletter";
+
+
+
+
+
+
+
 
 // Temporary Portfolio Home
 const PortfolioHome = () => (
@@ -21,17 +35,6 @@ const PortfolioHome = () => (
   </div>
 );
 
-// Temporary Dashboard Overview
-const DashboardOverview = () => (
-  <div>
-    <h1 className="text-2xl font-bold">Welcome to your Dashboard</h1>
-
-    <p className="mt-2 text-sm text-[var(--color-muted)]">
-      Your portfolio management workspace.
-    </p>
-  </div>
-);
-
 const App = () => {
   return (
     <BrowserRouter>
@@ -40,7 +43,7 @@ const App = () => {
           {/* Public Portfolio */}
           <Route path="/" element={<PortfolioHome />} />
 
-          {/* Public Admin Authentication */}
+          {/* Admin Authentication */}
           <Route element={<PublicRoute />}>
             <Route path="/admin/login" element={<Login />} />
 
@@ -49,10 +52,19 @@ const App = () => {
             <Route path="/admin/reset-password" element={<ResetPassword />} />
           </Route>
 
-          {/* Private Admin Dashboard */}
+          {/* Protected Admin Dashboard */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
-              <Route path="/admin/dashboard" element={<DashboardOverview />} />
+              <Route path="/admin/dashboard" element={<Dashboard />} />
+
+              <Route path="/admin/projects" element={<Projects />} />
+              <Route path="/admin/skills" element={<Skills />} />
+              <Route path="/admin/about" element={<About />} />
+              <Route path="/admin/hero" element={<Hero />} />
+              <Route path="/admin/journey" element={<Journey />} />
+              <Route path="/admin/socials" element={<Socials />} />
+              <Route path="/admin/messages" element={<Messages />} />
+              <Route path="/admin/newsletter" element={<Newsletter />} />
             </Route>
           </Route>
 
