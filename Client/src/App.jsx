@@ -4,8 +4,10 @@ import { AuthProvider } from "./context/AuthContext";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
-import Hero from "./pages/admin/Hero";
+
 import AdminLayout from "./layouts/AdminLayout";
+
+import Hero from "./pages/admin/Hero";
 import About from "./pages/admin/About";
 import Dashboard from "./pages/admin/Dashboard";
 import Login from "./pages/admin/Login";
@@ -17,23 +19,9 @@ import Journey from "./pages/admin/Journey";
 import Socials from "./pages/admin/Socials";
 import Messages from "./pages/admin/Messages";
 import Newsletter from "./pages/admin/Newsletter";
+import Notifications from "./pages/admin/Notifications";
 
-
-
-
-
-
-
-
-// Temporary Portfolio Home
-const PortfolioHome = () => (
-  <div className="flex min-h-screen items-center justify-center bg-[var(--color-background)] text-[var(--color-text)]">
-    <h1 className="text-4xl font-bold">
-      SALMAN FARSHI
-      <span className="text-[var(--color-primary)]">.</span>
-    </h1>
-  </div>
-);
+import PortfolioHome from "./pages/PortfolioHome";
 
 const App = () => {
   return (
@@ -46,9 +34,7 @@ const App = () => {
           {/* Admin Authentication */}
           <Route element={<PublicRoute />}>
             <Route path="/admin/login" element={<Login />} />
-
             <Route path="/admin/forgot-password" element={<ForgotPassword />} />
-
             <Route path="/admin/reset-password" element={<ResetPassword />} />
           </Route>
 
@@ -58,13 +44,22 @@ const App = () => {
               <Route path="/admin/dashboard" element={<Dashboard />} />
 
               <Route path="/admin/projects" element={<Projects />} />
+
               <Route path="/admin/skills" element={<Skills />} />
+
               <Route path="/admin/about" element={<About />} />
+
               <Route path="/admin/hero" element={<Hero />} />
+
               <Route path="/admin/journey" element={<Journey />} />
+
               <Route path="/admin/socials" element={<Socials />} />
+
               <Route path="/admin/messages" element={<Messages />} />
+
               <Route path="/admin/newsletter" element={<Newsletter />} />
+
+              <Route path="/admin/notifications" element={<Notifications />} />
             </Route>
           </Route>
 

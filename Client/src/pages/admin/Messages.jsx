@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import {
   FiSearch,
   FiRefreshCw,
@@ -11,7 +13,6 @@ import {
   FiExternalLink,
   FiClock,
   FiCheckCircle,
-  FiArchive,
   FiInbox,
   FiAlertCircle,
   FiUser,
@@ -46,7 +47,11 @@ const statusStyles = {
 const formatDate = (date) => {
   if (!date) return "—";
 
-  return new Date(date).toLocaleString("en-US", {
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) return "—";
+
+  return parsedDate.toLocaleString("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -56,6 +61,8 @@ const formatDate = (date) => {
 };
 
 const Messages = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -65,6 +72,7 @@ const Messages = () => {
   const [status, setStatus] = useState("");
 
   const [page, setPage] = useState(1);
+
   const [pagination, setPagination] = useState({
     total: 0,
     pages: 1,
@@ -78,6 +86,7 @@ const Messages = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Fetch contacts
   const fetchContacts = useCallback(async () => {
     try {
       setLoading(true);
@@ -91,6 +100,7 @@ const Messages = () => {
       });
 
       setContacts(response.contacts || []);
+
       setPagination({
         total: response.total || 0,
         pages: response.pages || 1,
@@ -107,27 +117,38 @@ const Messages = () => {
     fetchContacts();
   }, [fetchContacts]);
 
+  // Search
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
     setAppliedSearch(search.trim());
   };
 
+  // Status filter
   const handleStatusFilter = (value) => {
     setStatus(value);
     setPage(1);
   };
 
-  const openMessage = async (id) => {
+  // Open message details
+  const openMessage = useCallback(async (id) => {
+    if (!id) return;
+
     try {
       setDetailLoading(true);
       setSelectedContact(null);
       setError("");
 
       const response = await getContactById(id);
+
       let contact = response.contact;
 
-      if (contact?.status === "new") {
+      if (!contact) {
+        throw new Error("Contact message not found.");
+      }
+
+      // Automatically mark new messages as read
+      if (contact.status === "new") {
         const updated = await updateContact(id, {
           status: "read",
         });
@@ -150,8 +171,24 @@ const Messages = () => {
     } finally {
       setDetailLoading(false);
     }
+  }, []);
+
+  // Automatically open a message from notification URL
+  useEffect(() => {
+    const contactId = searchParams.get("contactId");
+
+    if (contactId) {
+      openMessage(contactId);
+    }
+  }, [searchParams, openMessage]);
+
+  // Close details modal
+  const closeMessage = () => {
+    setSelectedContact(null);
+    setSearchParams({}, { replace: true });
   };
 
+  // Update message status
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       setActionLoading(true);
@@ -184,6 +221,7 @@ const Messages = () => {
     }
   };
 
+  // Toggle star
   const handleToggleStar = async (contact) => {
     try {
       setError("");
@@ -211,6 +249,7 @@ const Messages = () => {
     }
   };
 
+  // Delete message
   const handleDelete = async () => {
     if (!deleteTarget) return;
 
@@ -225,13 +264,13 @@ const Messages = () => {
       );
 
       if (selectedContact?._id === deleteTarget._id) {
-        setSelectedContact(null);
+        closeMessage();
       }
 
       setDeleteTarget(null);
+
       setSuccess(response.message || "Message deleted successfully.");
 
-      // Refresh to keep pagination accurate.
       if (contacts.length === 1 && page > 1) {
         setPage((prev) => prev - 1);
       } else {
@@ -244,6 +283,7 @@ const Messages = () => {
     }
   };
 
+  // Statistics
   const newCount = contacts.filter((item) => item.status === "new").length;
 
   const starredCount = contacts.filter((item) => item.isStarred).length;
@@ -252,6 +292,7 @@ const Messages = () => {
     (item) => item.status === "replied",
   ).length;
 
+  // Clear filters
   const clearFilters = () => {
     setSearch("");
     setAppliedSearch("");
@@ -267,6 +308,7 @@ const Messages = () => {
           <h1 className="text-2xl font-bold text-[var(--color-text)]">
             Contact Messages
           </h1>
+
           <p className="mt-1 text-sm text-[var(--color-muted)]">
             Manage messages sent through your portfolio contact form.
           </p>
@@ -287,6 +329,7 @@ const Messages = () => {
         <div className="flex items-center gap-2 rounded-xl border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 p-4 text-sm text-[var(--color-danger)]">
           <FiAlertCircle />
           <span>{error}</span>
+
           <button onClick={() => setError("")} className="ml-auto">
             <FiX />
           </button>
@@ -297,6 +340,7 @@ const Messages = () => {
         <div className="flex items-center gap-2 rounded-xl border border-[var(--color-success)]/30 bg-[var(--color-success)]/10 p-4 text-sm text-[var(--color-success)]">
           <FiCheckCircle />
           <span>{success}</span>
+
           <button onClick={() => setSuccess("")} className="ml-auto">
             <FiX />
           </button>
@@ -310,6 +354,7 @@ const Messages = () => {
             <p className="text-sm text-[var(--color-muted)]">Total Messages</p>
             <FiInbox className="text-xl text-[var(--color-primary)]" />
           </div>
+
           <p className="mt-3 text-3xl font-bold text-[var(--color-text)]">
             {pagination.total}
           </p>
@@ -322,6 +367,7 @@ const Messages = () => {
             </p>
             <FiMail className="text-xl text-[var(--color-primary)]" />
           </div>
+
           <p className="mt-3 text-3xl font-bold text-[var(--color-text)]">
             {newCount}
           </p>
@@ -334,6 +380,7 @@ const Messages = () => {
             </p>
             <FiStar className="text-xl text-[var(--color-warning)]" />
           </div>
+
           <p className="mt-3 text-3xl font-bold text-[var(--color-text)]">
             {starredCount}
           </p>
@@ -346,6 +393,7 @@ const Messages = () => {
             </p>
             <FiCheckCircle className="text-xl text-[var(--color-success)]" />
           </div>
+
           <p className="mt-3 text-3xl font-bold text-[var(--color-text)]">
             {repliedCount}
           </p>
@@ -360,6 +408,7 @@ const Messages = () => {
         >
           <div className="relative flex-1">
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
+
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -374,6 +423,7 @@ const Messages = () => {
             className={`${inputClass} lg:w-48`}
           >
             <option value="">All Statuses</option>
+
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -404,6 +454,7 @@ const Messages = () => {
         <div className="flex flex-col justify-between gap-2 border-b border-[var(--color-border)] p-5 sm:flex-row sm:items-center">
           <div>
             <h2 className="font-semibold text-[var(--color-text)]">Inbox</h2>
+
             <p className="mt-1 text-xs text-[var(--color-muted)]">
               {pagination.total} matching messages
             </p>
@@ -417,6 +468,7 @@ const Messages = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20">
             <FiRefreshCw className="animate-spin text-2xl text-[var(--color-primary)]" />
+
             <p className="text-sm text-[var(--color-muted)]">
               Loading messages...
             </p>
@@ -426,9 +478,11 @@ const Messages = () => {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-surface-hover)]">
               <FiInbox className="text-3xl text-[var(--color-muted)]" />
             </div>
+
             <h3 className="font-semibold text-[var(--color-text)]">
               Your inbox is empty
             </h3>
+
             <p className="mt-2 max-w-sm text-sm text-[var(--color-muted)]">
               No messages match your current filters. New contact form
               submissions will appear here.
@@ -475,7 +529,9 @@ const Messages = () => {
                       </span>
 
                       <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${statusStyles[contact.status] || statusStyles.read}`}
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${
+                          statusStyles[contact.status] || statusStyles.read
+                        }`}
                       >
                         {contact.status}
                       </span>
@@ -568,7 +624,7 @@ const Messages = () => {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-5"
           onClick={() => {
-            if (!actionLoading) setSelectedContact(null);
+            if (!actionLoading) closeMessage();
           }}
         >
           <div
@@ -580,13 +636,14 @@ const Messages = () => {
                 <h2 className="text-lg font-bold text-[var(--color-text)]">
                   Message Details
                 </h2>
+
                 <p className="mt-1 text-xs text-[var(--color-muted)]">
                   View and manage this contact submission.
                 </p>
               </div>
 
               <button
-                onClick={() => setSelectedContact(null)}
+                onClick={closeMessage}
                 className="rounded-lg p-2 text-[var(--color-muted)] hover:bg-[var(--color-surface-hover)]"
               >
                 <FiX size={20} />
@@ -609,6 +666,7 @@ const Messages = () => {
                       <h3 className="font-semibold text-[var(--color-text)]">
                         {selectedContact.name}
                       </h3>
+
                       <a
                         href={`mailto:${selectedContact.email}`}
                         className="mt-1 block text-sm text-[var(--color-primary)] hover:underline"
@@ -629,6 +687,7 @@ const Messages = () => {
                     <FiStar
                       fill={selectedContact.isStarred ? "currentColor" : "none"}
                     />
+
                     {selectedContact.isStarred ? "Starred" : "Star"}
                   </button>
                 </div>
@@ -639,6 +698,7 @@ const Messages = () => {
                       <FiCalendar className="mr-1 inline" />
                       Received
                     </p>
+
                     <p className="mt-1 text-sm font-medium text-[var(--color-text)]">
                       {formatDate(selectedContact.createdAt)}
                     </p>
@@ -649,6 +709,7 @@ const Messages = () => {
                       <FiClock className="mr-1 inline" />
                       Status
                     </p>
+
                     <p className="mt-1 text-sm font-medium capitalize text-[var(--color-text)]">
                       {selectedContact.status}
                     </p>
@@ -659,6 +720,7 @@ const Messages = () => {
                       <p className="text-xs text-[var(--color-muted)]">
                         Replied At
                       </p>
+
                       <p className="mt-1 text-sm text-[var(--color-text)]">
                         {formatDate(selectedContact.repliedAt)}
                       </p>
@@ -670,6 +732,7 @@ const Messages = () => {
                   <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
                     Subject
                   </p>
+
                   <h3 className="mt-2 text-lg font-semibold text-[var(--color-text)]">
                     {selectedContact.subject}
                   </h3>
@@ -679,6 +742,7 @@ const Messages = () => {
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
                     Message
                   </p>
+
                   <div className="whitespace-pre-wrap break-words rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 text-sm leading-7 text-[var(--color-text)]">
                     {selectedContact.message}
                   </div>
@@ -687,7 +751,9 @@ const Messages = () => {
                 <div className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap gap-2">
                     <a
-                      href={`mailto:${selectedContact.email}?subject=${encodeURIComponent(`Re: ${selectedContact.subject}`)}`}
+                      href={`mailto:${selectedContact.email}?subject=${encodeURIComponent(
+                        `Re: ${selectedContact.subject}`,
+                      )}`}
                       className="flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
                     >
                       Reply by Email

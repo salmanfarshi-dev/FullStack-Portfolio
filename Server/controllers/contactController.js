@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 import Contact from "../models/Contact.js";
 import { sendContactNotification } from "../services/emailService.js";
+import { createNotification } from "./notificationController.js";
+
 // Submit Contact Message (Public)
 export const createContact = async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
 
+    // Validate required fields
     if (
       !name?.trim() ||
       !email?.trim() ||
@@ -18,6 +21,7 @@ export const createContact = async (req, res) => {
       });
     }
 
+    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email.trim())) {
@@ -27,6 +31,7 @@ export const createContact = async (req, res) => {
       });
     }
 
+    // Validate field lengths
     if (
       name.trim().length > 100 ||
       email.trim().length > 150 ||
@@ -39,6 +44,7 @@ export const createContact = async (req, res) => {
       });
     }
 
+    // Save Contact Message
     const contact = await Contact.create({
       name: name.trim(),
       email: email.trim().toLowerCase(),
@@ -49,15 +55,50 @@ export const createContact = async (req, res) => {
     });
 
     // Send Email Notification
-await sendContactNotification(contact);
+    try {
+      await sendContactNotification(contact);
+    } catch (emailError) {
+      console.error("Contact Notification Email Error:", emailError.message);
+    }
 
-    // Real-time notification to connected admin dashboard
-    req.app.get("io")?.emit("new-contact-message", {
-      id: contact._id,
-      name: contact.name,
-      subject: contact.subject,
-      createdAt: contact.createdAt,
-    });
+    // Create Admin Notification in MongoDB
+    try {
+      const notification = await createNotification({
+        type: "contact",
+        title: "New Contact Message",
+        message: `${contact.name} sent you a new message: ${contact.subject}`,
+        link: `/admin/contacts/${contact._id}`,
+        metadata: {
+          contactId: contact._id,
+          name: contact.name,
+          email: contact.email,
+          subject: contact.subject,
+        },
+      });
+
+      if (!notification?.length) {
+        console.warn(
+          "Contact saved, but no admin notification was created. Check active admin accounts.",
+        );
+      }
+    } catch (notificationError) {
+      console.error(
+        "Contact Admin Notification Error:",
+        notificationError.message,
+      );
+    }
+
+    // Emit Contact Event through Socket.IO
+    const io = req.app.get("io");
+
+    if (io) {
+      io.emit("new-contact-message", {
+        id: contact._id,
+        name: contact.name,
+        subject: contact.subject,
+        createdAt: contact.createdAt,
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -78,6 +119,7 @@ await sendContactNotification(contact);
 export const getAllContacts = async (req, res) => {
   try {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+
     const limit = Math.min(
       50,
       Math.max(1, Number.parseInt(req.query.limit, 10) || 10),
@@ -104,9 +146,24 @@ export const getAllContacts = async (req, res) => {
       const keyword = search.trim().slice(0, 100);
 
       filter.$or = [
-        { name: { $regex: keyword, $options: "i" } },
-        { email: { $regex: keyword, $options: "i" } },
-        { subject: { $regex: keyword, $options: "i" } },
+        {
+          name: {
+            $regex: keyword,
+            $options: "i",
+          },
+        },
+        {
+          email: {
+            $regex: keyword,
+            $options: "i",
+          },
+        },
+        {
+          subject: {
+            $regex: keyword,
+            $options: "i",
+          },
+        },
       ];
     }
 

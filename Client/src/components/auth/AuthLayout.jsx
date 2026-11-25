@@ -11,7 +11,7 @@ const AuthLayout = ({
   icon,
 }) => {
   return (
-    <main className="auth-theme relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
+    <main className="auth-theme relative flex min-h-screen items-center justify-center overflow-x-hidden px-4 py-4 sm:px-6 lg:px-8">
       {/* Background */}
       <div className="auth-glow auth-glow-one" />
       <div className="auth-glow auth-glow-two" />
