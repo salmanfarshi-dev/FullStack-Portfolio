@@ -20,6 +20,7 @@ import Socials from "./pages/admin/Socials";
 import Messages from "./pages/admin/Messages";
 import Newsletter from "./pages/admin/Newsletter";
 import Notifications from "./pages/admin/Notifications";
+import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 
 import PortfolioHome from "./pages/PortfolioHome";
 
@@ -60,6 +61,14 @@ const App = () => {
               <Route path="/admin/newsletter" element={<Newsletter />} />
 
               <Route path="/admin/notifications" element={<Notifications />} />
+
+              <Route path="/admin/analytics" element={<AdminPlaceholder title="Analytics" description="Track portfolio performance, visitor activity and engagement insights." />} />
+              <Route path="/admin/resume" element={<AdminPlaceholder title="Resume Management" description="Manage and update the resume displayed on your portfolio." />} />
+              <Route path="/admin/seo" element={<AdminPlaceholder title="SEO Settings" description="Manage search engine metadata and portfolio discoverability." />} />
+              <Route path="/admin/settings" element={<AdminPlaceholder title="Website Settings" description="Configure your portfolio website preferences." />} />
+              <Route path="/admin/activity-logs" element={<AdminPlaceholder title="Activity Logs" description="Review important actions and administrative activity." />} />
+              <Route path="/admin/backups" element={<AdminPlaceholder title="Backups" description="Manage portfolio data backup and restore options." />} />
+              <Route path="/admin/profile" element={<AdminPlaceholder title="My Profile" description="View and manage your administrator profile." />} />
             </Route>
           </Route>
 
