@@ -78,6 +78,7 @@ const Notifications = () => {
             : item,
         ),
       );
+      window.dispatchEvent(new Event("notifications-updated"));
     } catch (error) {
       window.alert(error.message);
     } finally {
@@ -97,6 +98,7 @@ const Notifications = () => {
       setNotifications((prev) =>
         prev.map((item) => ({ ...item, isRead: true })),
       );
+      window.dispatchEvent(new Event("notifications-updated"));
     } catch (error) {
       window.alert(error.message);
     } finally {
@@ -120,6 +122,7 @@ const Notifications = () => {
       });
 
       setNotifications((prev) => prev.filter((item) => item._id !== id));
+      window.dispatchEvent(new Event("notifications-updated"));
     } catch (error) {
       window.alert(error.message);
     } finally {
@@ -143,6 +146,7 @@ const Notifications = () => {
       });
 
       setNotifications([]);
+      window.dispatchEvent(new Event("notifications-updated"));
     } catch (error) {
       window.alert(error.message);
     } finally {
