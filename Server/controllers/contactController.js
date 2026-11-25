@@ -67,13 +67,14 @@ export const createContact = async (req, res) => {
         type: "contact",
         title: "New Contact Message",
         message: `${contact.name} sent you a new message: ${contact.subject}`,
-        link: `/admin/contacts/${contact._id}`,
+        link: `/admin/messages?contactId=${contact._id}`,
         metadata: {
           contactId: contact._id,
           name: contact.name,
           email: contact.email,
           subject: contact.subject,
         },
+        io: req.app.get("io"),
       });
 
       if (!notification?.length) {
