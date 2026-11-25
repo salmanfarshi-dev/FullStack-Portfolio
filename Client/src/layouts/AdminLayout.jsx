@@ -28,6 +28,8 @@ import {
   FiExternalLink,
 } from "react-icons/fi";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+
 const navigationGroups = [
   {
     title: "OVERVIEW",
@@ -79,6 +81,7 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
@@ -91,6 +94,46 @@ const AdminLayout = () => {
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch(`${API_URL}/notifications?limit=1`, {
+          credentials: "include",
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (isMounted) {
+          setUnreadCount(Math.max(0, Number(data.unreadCount) || 0));
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread notifications:", error);
+      }
+    };
+
+    if (!admin) {
+      setUnreadCount(0);
+      return undefined;
+    }
+
+    fetchUnreadCount();
+
+    const intervalId = window.setInterval(fetchUnreadCount, 30000);
+    window.addEventListener("focus", fetchUnreadCount);
+    window.addEventListener("notifications-updated", fetchUnreadCount);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", fetchUnreadCount);
+      window.removeEventListener("notifications-updated", fetchUnreadCount);
+    };
+  }, [admin?._id, location.pathname]);
 
   const toggleTheme = () => {
     setTheme((current) => (current === "light" ? "dark" : "light"));
@@ -271,7 +314,11 @@ const AdminLayout = () => {
                 className="relative rounded-xl border border-[var(--color-border)] p-2.5 text-[var(--color-muted)] transition hover:bg-[var(--color-surface-hover)]"
               >
                 <FiBell size={18} />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[var(--color-danger)]" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--color-danger)] px-1 text-[10px] font-bold leading-none text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </button>
 
               {/* Admin Profile */}
