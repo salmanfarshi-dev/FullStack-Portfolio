@@ -23,7 +23,7 @@ import {
   Download,
   CheckCircle2,
 } from "lucide-react";
-
+import Footer from "../components/Footer";
 import { FiGithub, FiLinkedin } from "react-icons/fi";
 
 const navLinks = [
@@ -1091,50 +1091,7 @@ const PortfolioHome = () => {
 
       {/* Footer */}
 
-      <footer className="relative z-10 border-t border-white/[0.06] px-5 py-8 sm:px-8 lg:px-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 sm:flex-row">
-          <button
-            onClick={() => scrollToSection("home")}
-            className="text-lg font-bold tracking-wide"
-          >
-            SALMAN<span className="text-cyan-400">.</span>
-          </button>
-
-          <p className="text-center text-sm text-slate-500">
-            © {new Date().getFullYear()} Salman Farshi. All rights reserved.
-          </p>
-
-          <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/salmanfarshi-dev"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="GitHub"
-              className="text-slate-400 transition hover:text-cyan-400"
-            >
-              <FiGithub size={19} />
-            </a>
-
-            <a
-              href="https://www.linkedin.com/in/salmanfarshi-dev/"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="LinkedIn"
-              className="text-slate-400 transition hover:text-cyan-400"
-            >
-              <FiLinkedin size={19} />
-            </a>
-
-            <a
-              href="mailto:sfarshi222@gmail.com"
-              aria-label="Email"
-              className="text-slate-400 transition hover:text-cyan-400"
-            >
-              <Mail size={19} />
-            </a>
-          </div>
-        </div>
-      </footer>
+     <Footer onNavigate={scrollToSection} />
     </div>
   );
 };
