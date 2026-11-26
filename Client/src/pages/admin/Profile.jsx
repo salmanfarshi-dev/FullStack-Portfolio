@@ -37,7 +37,7 @@ const Profile = () => {
     const response = await fetch(`${API_URL}${path}`, {
       credentials: "include",
       ...options,
-      headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...options.headers },
+      headers: { ...(options.body && !(options.body instanceof FormData) ? { "Content-Type": "application/json" } : {}), ...options.headers },
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.message || "Something went wrong. Please try again.");
