@@ -1,5 +1,6 @@
 
 import Admin from "../models/Admin.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const COOKIE_NAME = "admin_token";
 
@@ -105,6 +106,16 @@ export const updateAdminProfile = async (req, res) => {
 
     await admin.save();
 
+    await createActivityLog({
+      admin: req.admin,
+      action: "UPDATE_PROFILE",
+      module: "system",
+      description: "Updated admin profile details.",
+      targetId: admin._id.toString(),
+      targetName: admin.name,
+      req,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Admin profile updated successfully.",
@@ -198,6 +209,16 @@ export const changeAdminPassword = async (req, res) => {
     admin.tokenVersion = (admin.tokenVersion ?? 0) + 1;
 
     await admin.save();
+
+    await createActivityLog({
+      admin: req.admin,
+      action: "CHANGE_PASSWORD",
+      module: "system",
+      description: "Changed admin account password.",
+      targetId: admin._id.toString(),
+      targetName: admin.name,
+      req,
+    });
 
     // Clear the current authentication cookie
     res.clearCookie(COOKIE_NAME, getCookieOptions());
