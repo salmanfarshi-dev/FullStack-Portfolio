@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import WebsiteSettings from "../models/WebsiteSettings.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const allowedFields = [
   "siteName",
@@ -171,6 +172,16 @@ export const createWebsiteSettings = async (req, res) => {
 
     const settings = await WebsiteSettings.create(settingsData);
 
+    await createActivityLog({
+      admin: req.admin,
+      action: "CREATE",
+      module: "settings",
+      description: "Created website settings.",
+      targetId: settings._id.toString(),
+      targetName: settings.siteName || "Website Settings",
+      req,
+    });
+
     return res.status(201).json({
       success: true,
       message: "Website settings created successfully.",
@@ -247,6 +258,16 @@ export const updateWebsiteSettings = async (req, res) => {
     Object.assign(settings, updates);
 
     await settings.save();
+
+    await createActivityLog({
+      admin: req.admin,
+      action: "UPDATE",
+      module: "settings",
+      description: "Updated website settings.",
+      targetId: settings._id.toString(),
+      targetName: settings.siteName || "Website Settings",
+      req,
+    });
 
     return res.status(200).json({
       success: true,
