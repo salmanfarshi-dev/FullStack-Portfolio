@@ -294,6 +294,15 @@ export const deleteOldActivityLogs = async (req, res) => {
       createdAt: { $lt: cutoffDate },
     });
 
+    await createActivityLog({
+      admin: req.admin,
+      action: "CLEANUP",
+      module: "system",
+      description: `Deleted ${result.deletedCount} activity logs older than ${days} days.`,
+      metadata: { days, deletedCount: result.deletedCount },
+      req,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Old activity logs deleted successfully.",
