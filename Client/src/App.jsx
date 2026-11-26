@@ -22,6 +22,7 @@ import Newsletter from "./pages/admin/Newsletter";
 import Notifications from "./pages/admin/Notifications";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import Analytics from "./pages/admin/Analytics";
+import ActivityLogs from "./pages/admin/ActivityLogs";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 
 import PortfolioHome from "./pages/PortfolioHome";
@@ -46,30 +47,20 @@ const App = () => {
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin/dashboard" element={<Dashboard />} />
-
               <Route path="/admin/projects" element={<Projects />} />
-
               <Route path="/admin/skills" element={<Skills />} />
-
               <Route path="/admin/about" element={<About />} />
-
               <Route path="/admin/hero" element={<Hero />} />
-
               <Route path="/admin/journey" element={<Journey />} />
-
               <Route path="/admin/socials" element={<Socials />} />
-
               <Route path="/admin/messages" element={<Messages />} />
-
               <Route path="/admin/newsletter" element={<Newsletter />} />
-
               <Route path="/admin/notifications" element={<Notifications />} />
-
               <Route path="/admin/analytics" element={<Analytics />} />
+              <Route path="/admin/activity-logs" element={<ActivityLogs />} />
               <Route path="/admin/resume" element={<AdminPlaceholder title="Resume Management" description="Manage and update the resume displayed on your portfolio." />} />
               <Route path="/admin/seo" element={<AdminPlaceholder title="SEO Settings" description="Manage search engine metadata and portfolio discoverability." />} />
               <Route path="/admin/settings" element={<AdminPlaceholder title="Website Settings" description="Configure your portfolio website preferences." />} />
-              <Route path="/admin/activity-logs" element={<AdminPlaceholder title="Activity Logs" description="Review important actions and administrative activity." />} />
               <Route path="/admin/backups" element={<AdminPlaceholder title="Backups" description="Manage portfolio data backup and restore options." />} />
               <Route path="/admin/profile" element={<AdminPlaceholder title="My Profile" description="View and manage your administrator profile." />} />
             </Route>
