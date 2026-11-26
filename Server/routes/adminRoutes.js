@@ -25,4 +25,8 @@ router.patch("/profile", updateAdminProfile);
 // Change Admin Password
 router.patch("/change-password", changeAdminPassword);
 
+// Admin Profile Photo
+router.post("/profile/photo", profileImageUpload, uploadAdminProfileImage);
+router.delete("/profile/photo", deleteAdminProfileImage);
+
 export default router;
