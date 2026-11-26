@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Social from "../models/Social.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const allowedFields = [
   "platform",
@@ -100,6 +101,7 @@ export const createSocial = async (req, res) => {
     }
 
     const social = await Social.create(socialData);
+    await createActivityLog({ admin: req.admin, action: "social_created", module: "socials", description: `Created social link "${social.platform}".`, targetId: social._id.toString(), targetName: social.platform, req });
 
     return res.status(201).json({
       success: true,
@@ -177,6 +179,7 @@ export const updateSocial = async (req, res) => {
     Object.assign(social, updates);
 
     await social.save();
+    await createActivityLog({ admin: req.admin, action: "social_updated", module: "socials", description: `Updated social link "${social.platform}".`, targetId: social._id.toString(), targetName: social.platform, req });
 
     return res.status(200).json({
       success: true,
@@ -213,6 +216,8 @@ export const deleteSocial = async (req, res) => {
         message: "Social link not found.",
       });
     }
+
+    await createActivityLog({ admin: req.admin, action: "social_deleted", module: "socials", description: `Deleted social link "${social.platform}".`, targetId: social._id.toString(), targetName: social.platform, req });
 
     return res.status(200).json({
       success: true,
