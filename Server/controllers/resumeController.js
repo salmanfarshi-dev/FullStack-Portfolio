@@ -1,279 +1,154 @@
 import mongoose from "mongoose";
+import { Readable } from "stream";
 import Resume from "../models/Resume.js";
+import cloudinary, { isCloudinaryConfigured } from "../config/cloudinary.js";
+import { createActivityLog } from "./activityLogController.js";
 
-const allowedFields = [
-  "title",
-  "fileUrl",
-  "publicId",
-  "fileName",
-  "fileSize",
-  "fileFormat",
-  "description",
-  "isVisible",
-];
+const uploadPdfToCloudinary = (file) => new Promise((resolve, reject) => {
+  const stream = cloudinary.uploader.upload_stream({
+    resource_type: "raw",
+    folder: "salman-farshi/resume",
+    format: "pdf",
+    use_filename: false,
+    unique_filename: true,
+    access_mode: "public",
+  }, (error, result) => error ? reject(error) : resolve(result));
+  Readable.from(file.buffer).pipe(stream);
+});
 
-const isValidUrl = (value) => {
+const deleteCloudinaryPdf = async (publicId) => {
+  if (!publicId || !isCloudinaryConfigured()) return;
   try {
-    const url = new URL(value);
-    return ["http:", "https:"].includes(url.protocol);
-  } catch {
-    return false;
+    await cloudinary.uploader.destroy(publicId, { resource_type: "raw", invalidate: true });
+  } catch (error) {
+    console.error("Cloudinary old resume cleanup failed:", error.message);
   }
 };
 
-// Get Public Resume
+// Public resume
 export const getPublicResume = async (req, res) => {
   try {
-    const resume = await Resume.findOne({ isVisible: true }).select(
-      "-publicId",
-    );
-
-    return res.status(200).json({
-      success: true,
-      resume,
-    });
+    const resume = await Resume.findOne({ isVisible: true }).select("-publicId");
+    return res.status(200).json({ success: true, resume });
   } catch (error) {
     console.error("Get Public Resume Error:", error.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch resume.",
-    });
+    return res.status(500).json({ success: false, message: "Failed to fetch resume." });
   }
 };
 
-// Get Resume (Admin)
+// Admin resume
 export const getAdminResume = async (req, res) => {
   try {
     const resume = await Resume.findOne();
-
-    return res.status(200).json({
-      success: true,
-      resume,
-    });
+    return res.status(200).json({ success: true, resume });
   } catch (error) {
     console.error("Get Admin Resume Error:", error.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch resume.",
-    });
+    return res.status(500).json({ success: false, message: "Failed to fetch resume." });
   }
 };
 
-// Create Resume
-export const createResume = async (req, res) => {
+// Upload or replace PDF
+export const uploadResume = async (req, res) => {
   try {
-    const { title, fileUrl } = req.body;
+    if (!isCloudinaryConfigured()) {
+      return res.status(503).json({ success: false, message: "Cloudinary is not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET to Server/.env." });
+    }
+    if (!req.file) return res.status(400).json({ success: false, message: "Please choose a PDF file." });
 
-    if (
-      typeof title !== "string" ||
-      !title.trim() ||
-      typeof fileUrl !== "string" ||
-      !isValidUrl(fileUrl.trim())
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid resume title and file URL are required.",
-      });
+    const title = typeof req.body.title === "string" && req.body.title.trim()
+      ? req.body.title.trim().slice(0, 150) : "My Professional Resume";
+    const description = typeof req.body.description === "string" ? req.body.description.trim().slice(0, 500) : "";
+    const isVisible = req.body.isVisible === undefined ? true : req.body.isVisible === "true";
+
+    const uploaded = await uploadPdfToCloudinary(req.file);
+    const existing = await Resume.findOne();
+    const oldPublicId = existing?.publicId;
+
+    const resumeData = {
+      title,
+      fileUrl: uploaded.secure_url,
+      publicId: uploaded.public_id,
+      fileName: req.file.originalname,
+      fileSize: req.file.size,
+      fileFormat: "pdf",
+      description,
+      isVisible,
+      lastUpdated: new Date(),
+    };
+
+    let resume;
+    if (existing) {
+      Object.assign(existing, resumeData);
+      resume = await existing.save();
+    } else {
+      resume = await Resume.create(resumeData);
     }
 
-    if (
-      req.body.fileFormat !== undefined &&
-      req.body.fileFormat.toLowerCase() !== "pdf"
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Only PDF resumes are supported.",
-      });
-    }
+    if (oldPublicId && oldPublicId !== uploaded.public_id) await deleteCloudinaryPdf(oldPublicId);
 
-    const existingResume = await Resume.findOne();
-
-    if (existingResume) {
-      return res.status(409).json({
-        success: false,
-        message: "A resume already exists. Please update it instead.",
-      });
-    }
-
-    const resumeData = {};
-
-    for (const field of allowedFields) {
-      if (req.body[field] !== undefined) {
-        resumeData[field] = req.body[field];
-      }
-    }
-
-    resumeData.fileFormat = "pdf";
-    resumeData.lastUpdated = new Date();
-
-    const resume = await Resume.create(resumeData);
-
-    return res.status(201).json({
-      success: true,
-      message: "Resume created successfully.",
-      resume,
+    await createActivityLog({
+      admin: req.admin,
+      action: existing ? "resume_replaced" : "resume_uploaded",
+      module: "resume",
+      description: existing ? "Replaced the portfolio resume PDF." : "Uploaded a portfolio resume PDF.",
+      targetId: resume._id.toString(),
+      targetName: resume.fileName,
+      metadata: { fileSize: resume.fileSize, fileFormat: "pdf" },
+      req,
     });
+
+    return res.status(existing ? 200 : 201).json({ success: true, message: existing ? "Resume replaced successfully." : "Resume uploaded successfully.", resume });
   } catch (error) {
-    console.error("Create Resume Error:", error.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to create resume.",
-    });
+    console.error("Upload Resume Error:", error.message);
+    return res.status(500).json({ success: false, message: "Failed to upload resume." });
   }
 };
 
-// Update Resume
 export const updateResume = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid resume ID.",
-      });
-    }
-
-    const resume = await Resume.findById(id);
-
-    if (!resume) {
-      return res.status(404).json({
-        success: false,
-        message: "Resume not found.",
-      });
-    }
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: "Invalid resume ID." });
+    const resume = await Resume.findById(req.params.id);
+    if (!resume) return res.status(404).json({ success: false, message: "Resume not found." });
 
     const updates = {};
-
-    for (const field of allowedFields) {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-      }
+    if (req.body.title !== undefined) {
+      if (typeof req.body.title !== "string" || !req.body.title.trim()) return res.status(400).json({ success: false, message: "Resume title cannot be empty." });
+      updates.title = req.body.title.trim().slice(0, 150);
     }
-
-    if (
-      updates.title !== undefined &&
-      (typeof updates.title !== "string" || !updates.title.trim())
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Resume title cannot be empty.",
-      });
-    }
-
-    if (
-      updates.fileUrl !== undefined &&
-      (typeof updates.fileUrl !== "string" ||
-        !isValidUrl(updates.fileUrl.trim()))
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide a valid resume URL.",
-      });
-    }
-
-    if (
-      updates.fileFormat !== undefined &&
-      (typeof updates.fileFormat !== "string" ||
-        updates.fileFormat.toLowerCase() !== "pdf")
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Only PDF resumes are supported.",
-      });
-    }
-
-    if (updates.fileUrl !== undefined) {
-      updates.lastUpdated = new Date();
-    }
-
+    if (req.body.description !== undefined) updates.description = String(req.body.description).trim().slice(0, 500);
+    if (req.body.isVisible !== undefined) updates.isVisible = Boolean(req.body.isVisible);
     Object.assign(resume, updates);
-
     await resume.save();
 
-    return res.status(200).json({
-      success: true,
-      message: "Resume updated successfully.",
-      resume,
-    });
+    await createActivityLog({ admin: req.admin, action: "resume_updated", module: "resume", description: "Updated resume details or visibility.", targetId: resume._id.toString(), targetName: resume.fileName, req });
+    return res.status(200).json({ success: true, message: "Resume updated successfully.", resume });
   } catch (error) {
     console.error("Update Resume Error:", error.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to update resume.",
-    });
+    return res.status(500).json({ success: false, message: "Failed to update resume." });
   }
 };
 
-// Track Resume Download
 export const trackResumeDownload = async (req, res) => {
   try {
-    const resume = await Resume.findOneAndUpdate(
-      { isVisible: true },
-      { $inc: { downloadCount: 1 } },
-      {
-        new: true,
-        projection: { downloadCount: 1 },
-      },
-    );
-
-    if (!resume) {
-      return res.status(404).json({
-        success: false,
-        message: "Resume is currently unavailable.",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Resume download tracked.",
-      downloadCount: resume.downloadCount,
-    });
+    const resume = await Resume.findOneAndUpdate({ isVisible: true }, { $inc: { downloadCount: 1 } }, { new: true, projection: { downloadCount: 1 } });
+    if (!resume) return res.status(404).json({ success: false, message: "Resume is currently unavailable." });
+    return res.status(200).json({ success: true, message: "Resume download tracked.", downloadCount: resume.downloadCount });
   } catch (error) {
     console.error("Track Resume Download Error:", error.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to track resume download.",
-    });
+    return res.status(500).json({ success: false, message: "Failed to track resume download." });
   }
 };
 
-// Delete Resume
 export const deleteResume = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid resume ID.",
-      });
-    }
-
-    const resume = await Resume.findByIdAndDelete(id);
-
-    if (!resume) {
-      return res.status(404).json({
-        success: false,
-        message: "Resume not found.",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Resume deleted successfully.",
-    });
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: "Invalid resume ID." });
+    const resume = await Resume.findByIdAndDelete(req.params.id);
+    if (!resume) return res.status(404).json({ success: false, message: "Resume not found." });
+    await deleteCloudinaryPdf(resume.publicId);
+    await createActivityLog({ admin: req.admin, action: "resume_deleted", module: "resume", description: "Deleted the portfolio resume PDF.", targetId: resume._id.toString(), targetName: resume.fileName, req });
+    return res.status(200).json({ success: true, message: "Resume deleted successfully." });
   } catch (error) {
     console.error("Delete Resume Error:", error.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to delete resume.",
-    });
+    return res.status(500).json({ success: false, message: "Failed to delete resume." });
   }
 };
