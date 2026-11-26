@@ -24,6 +24,7 @@ import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import Analytics from "./pages/admin/Analytics";
 import ActivityLogs from "./pages/admin/ActivityLogs";
 import Resume from "./pages/admin/Resume";
+import Profile from "./pages/admin/Profile";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 
 import PortfolioHome from "./pages/PortfolioHome";
@@ -63,7 +64,7 @@ const App = () => {
               <Route path="/admin/seo" element={<AdminPlaceholder title="SEO Settings" description="Manage search engine metadata and portfolio discoverability." />} />
               <Route path="/admin/settings" element={<AdminPlaceholder title="Website Settings" description="Configure your portfolio website preferences." />} />
               <Route path="/admin/backups" element={<AdminPlaceholder title="Backups" description="Manage portfolio data backup and restore options." />} />
-              <Route path="/admin/profile" element={<AdminPlaceholder title="My Profile" description="View and manage your administrator profile." />} />
+              <Route path="/admin/profile" element={<Profile />} />
             </Route>
           </Route>
 
