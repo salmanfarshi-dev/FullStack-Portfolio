@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import About from "../models/About.js";
+import { createActivityLog } from "./activityLogController.js";
 
 // Get About Information (Public)
 export const getPublicAbout = async (req, res) => {
@@ -80,6 +81,7 @@ export const createAbout = async (req, res) => {
     }
 
     const about = await About.create(aboutData);
+    await createActivityLog({ admin: req.admin, action: "about_created", module: "about", description: "Created portfolio About information.", targetId: about._id.toString(), targetName: about.heading || "About", req });
 
     return res.status(201).json({
       success: true,
@@ -159,6 +161,7 @@ export const updateAbout = async (req, res) => {
     Object.assign(about, updates);
 
     await about.save();
+    await createActivityLog({ admin: req.admin, action: "about_updated", module: "about", description: "Updated portfolio About information.", targetId: about._id.toString(), targetName: about.heading || "About", req });
 
     return res.status(200).json({
       success: true,
