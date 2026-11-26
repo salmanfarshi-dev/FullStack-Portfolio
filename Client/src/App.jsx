@@ -20,11 +20,11 @@ import Socials from "./pages/admin/Socials";
 import Messages from "./pages/admin/Messages";
 import Newsletter from "./pages/admin/Newsletter";
 import Notifications from "./pages/admin/Notifications";
-import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import Analytics from "./pages/admin/Analytics";
 import ActivityLogs from "./pages/admin/ActivityLogs";
 import Resume from "./pages/admin/Resume";
 import Profile from "./pages/admin/Profile";
+import WebsiteSettings from "./pages/admin/WebsiteSettings";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 
 import PortfolioHome from "./pages/PortfolioHome";
@@ -62,7 +62,7 @@ const App = () => {
               <Route path="/admin/activity-logs" element={<ActivityLogs />} />
               <Route path="/admin/resume" element={<Resume />} />
               <Route path="/admin/seo" element={<AdminPlaceholder title="SEO Settings" description="Manage search engine metadata and portfolio discoverability." />} />
-              <Route path="/admin/settings" element={<AdminPlaceholder title="Website Settings" description="Configure your portfolio website preferences." />} />
+              <Route path="/admin/settings" element={<WebsiteSettings />} />
               <Route path="/admin/backups" element={<AdminPlaceholder title="Backups" description="Manage portfolio data backup and restore options." />} />
               <Route path="/admin/profile" element={<Profile />} />
             </Route>
