@@ -1,5 +1,7 @@
 
-import Admin from "../models/Admin.js";\nimport { Readable } from "stream";\nimport cloudinary, { isCloudinaryConfigured } from "../config/cloudinary.js";
+import Admin from "../models/Admin.js";
+import { Readable } from "stream";
+import cloudinary, { isCloudinaryConfigured } from "../config/cloudinary.js";
 import { createActivityLog } from "./activityLogController.js";
 
 const COOKIE_NAME = "admin_token";
