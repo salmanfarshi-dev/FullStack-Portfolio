@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Newsletter from "../models/Newsletter.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const isValidEmail = (email) => {
   return (
@@ -164,6 +165,7 @@ export const updateSubscriber = async (req, res) => {
     }
 
     await subscriber.save();
+    await createActivityLog({ admin: req.admin, action: "newsletter_status_updated", module: "newsletter", description: `Changed newsletter subscription status for "${subscriber.email}" to ${status}.`, targetId: subscriber._id.toString(), targetName: subscriber.email, req });
 
     return res.status(200).json({
       success: true,
@@ -200,6 +202,8 @@ export const deleteSubscriber = async (req, res) => {
         message: "Subscriber not found.",
       });
     }
+
+    await createActivityLog({ admin: req.admin, action: "newsletter_subscriber_deleted", module: "newsletter", description: `Deleted newsletter subscriber "${subscriber.email}".`, targetId: subscriber._id.toString(), targetName: subscriber.email, req });
 
     return res.status(200).json({
       success: true,
