@@ -328,9 +328,7 @@ const AdminLayout = () => {
                   onClick={() => setProfileOpen((open) => !open)}
                   className="flex items-center gap-2 rounded-xl p-1.5 transition hover:bg-[var(--color-surface-hover)]"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-primary)]/15 font-bold text-[var(--color-primary)]">
-                    {admin?.name?.charAt(0)?.toUpperCase() || "A"}
-                  </div>
+                  <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[var(--color-primary)]/15 font-bold text-[var(--color-primary)]">{admin?.profileImage?.url ? <img src={admin.profileImage.url} alt="Profile" className="h-full w-full object-cover" /> : admin?.name?.charAt(0)?.toUpperCase() || "A"}</div>
 
                   <div className="hidden text-left sm:block">
                     <p className="max-w-[130px] truncate text-sm font-semibold">
