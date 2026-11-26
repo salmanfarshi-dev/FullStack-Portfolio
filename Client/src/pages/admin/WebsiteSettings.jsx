@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   FiGlobe, FiSave, FiRefreshCw, FiAlertCircle, FiCheckCircle,
-  FiImage, FiMail, FiPhone, FiMapPin, FiPalette, FiShield,
+  FiImage, FiMail, FiPhone, FiMapPin, FiDroplet, FiShield,
   FiClock, FiRotateCcw,
 } from "react-icons/fi";
 
@@ -31,7 +31,7 @@ const DEFAULT_SETTINGS = {
 const groups = [
   { title: "Site identity", description: "Your portfolio's public name and visual identity.", icon: FiGlobe },
   { title: "Contact information", description: "How visitors can reach and locate you.", icon: FiMail },
-  { title: "Brand appearance", description: "Set the primary and secondary brand colors.", icon: FiPalette },
+  { title: "Brand appearance", description: "Set the primary and secondary brand colors.", icon: FiDroplet },
   { title: "Website controls", description: "Control public access and optional website features.", icon: FiShield },
 ];
 
@@ -188,7 +188,7 @@ const WebsiteSettings = () => {
           </section>
 
           <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
-            <div className="mb-6 flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]"><FiPalette size={20} /></div><div><h2 className="font-heading text-lg font-bold">Brand Appearance</h2><p className="mt-1 text-sm text-[var(--color-muted)]">Choose the colors that represent your portfolio brand.</p></div></div>
+            <div className="mb-6 flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]"><FiDroplet size={20} /></div><div><h2 className="font-heading text-lg font-bold">Brand Appearance</h2><p className="mt-1 text-sm text-[var(--color-muted)]">Choose the colors that represent your portfolio brand.</p></div></div>
             <div className="grid gap-5 md:grid-cols-2">
               <Field label="Primary brand color" hint="Used for key buttons, links and highlights.">{previewColor("primaryColor")}</Field>
               <Field label="Secondary brand color" hint="Used for supporting accents and decorative details.">{previewColor("secondaryColor")}</Field>
