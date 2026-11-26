@@ -25,7 +25,7 @@ const adminSchema = new mongoose.Schema(
       select: false,
     },
 
-    isActive: {
+    profileImage: {\n      url: { type: String, default: "" },\n      publicId: { type: String, default: "" },\n    },\n\n    isActive: {
       type: Boolean,
       default: true,
     },
