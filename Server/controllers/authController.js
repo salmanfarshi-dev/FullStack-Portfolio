@@ -100,6 +100,7 @@ export const loginAdmin = async (req, res) => {
         name: admin.name,
         email: admin.email,
         lastLoginAt: admin.lastLoginAt,
+        profileImage: admin.profileImage,
       },
     });
   } catch (error) {
@@ -121,6 +122,7 @@ export const getCurrentAdmin = async (req, res) => {
       name: req.admin.name,
       email: req.admin.email,
       lastLoginAt: req.admin.lastLoginAt,
+      profileImage: req.admin.profileImage,
     },
   });
 };
