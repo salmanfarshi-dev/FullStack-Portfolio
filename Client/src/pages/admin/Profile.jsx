@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   FiUser, FiMail, FiShield, FiCalendar, FiClock, FiSave,
   FiLock, FiEye, FiEyeOff, FiRefreshCw, FiCheckCircle, FiAlertCircle,
+  FiCamera, FiTrash2,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +21,10 @@ const Profile = () => {
   const { admin, updateAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState({ name: "", email: "", isActive: true, createdAt: "", lastLoginAt: "" });
+  const [profile, setProfile] = useState({ name: "", email: "", isActive: true, createdAt: "", lastLoginAt: "", profileImage: { url: "", publicId: "" } });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [removingImage, setRemovingImage] = useState(false);
+  const [imageInputKey, setImageInputKey] = useState(0);
   const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [showPasswords, setShowPasswords] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -52,6 +56,7 @@ const Profile = () => {
         isActive: Boolean(current.isActive),
         createdAt: current.createdAt || "",
         lastLoginAt: current.lastLoginAt || "",
+        profileImage: current.profileImage || { url: "", publicId: "" },
       });
     } catch (err) {
       setError(err.message);
@@ -61,6 +66,58 @@ const Profile = () => {
   }, []);
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+    if (!allowed.includes(file.type)) {
+      setError("Choose a JPG, PNG, WEBP or AVIF image.");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must be 5 MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+    setUploadingImage(true);
+    setError("");
+    setNotice("");
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const data = await request("/admin/profile/photo", { method: "POST", body: formData });
+      const updatedAdmin = data.admin || {};
+      setProfile((current) => ({ ...current, profileImage: updatedAdmin.profileImage || current.profileImage }));
+      updateAdmin(updatedAdmin);
+      setNotice(data.message || "Profile photo updated successfully.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploadingImage(false);
+      setImageInputKey((key) => key + 1);
+    }
+  };
+
+  const handleImageRemove = async () => {
+    if (!profile.profileImage?.url || removingImage) return;
+    if (!window.confirm("Remove your profile photo?")) return;
+    setRemovingImage(true);
+    setError("");
+    setNotice("");
+    try {
+      const data = await request("/admin/profile/photo", { method: "DELETE" });
+      const updatedAdmin = data.admin || {};
+      setProfile((current) => ({ ...current, profileImage: updatedAdmin.profileImage || { url: "", publicId: "" } }));
+      updateAdmin(updatedAdmin);
+      setNotice(data.message || "Profile photo removed.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRemovingImage(false);
+    }
+  };
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
@@ -73,7 +130,7 @@ const Profile = () => {
         body: JSON.stringify({ name: profile.name.trim(), email: profile.email.trim() }),
       });
       const updated = data.admin || {};
-      setProfile((current) => ({ ...current, name: updated.name || current.name, email: updated.email || current.email }));
+      setProfile((current) => ({ ...current, name: updated.name || current.name, email: updated.email || current.email, profileImage: updated.profileImage || current.profileImage }));
       updateAdmin(updated);
       setNotice(data.message || "Profile updated successfully.");
     } catch (err) {
@@ -131,13 +188,20 @@ const Profile = () => {
             <div className="h-28 bg-gradient-to-r from-[var(--color-primary)]/20 via-[var(--color-primary)]/5 to-transparent" />
             <div className="-mt-10 flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:justify-between sm:px-7">
               <div className="flex items-end gap-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-[var(--color-surface)] bg-[var(--color-primary)] text-3xl font-bold text-slate-950 shadow-sm">
-                  {(profile.name || admin?.name || "A").charAt(0).toUpperCase()}
+                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-[var(--color-surface)] bg-[var(--color-primary)] text-3xl font-bold text-slate-950 shadow-sm">
+                  {profile.profileImage?.url ? <img src={profile.profileImage.url} alt="Admin profile" className="h-full w-full object-cover" /> : (profile.name || admin?.name || "A").charAt(0).toUpperCase()}
                 </div>
                 <div className="pb-1">
                   <h2 className="font-heading text-xl font-bold">{profile.name || "Administrator"}</h2>
                   <p className="mt-1 text-sm text-[var(--color-muted)]">{profile.email}</p>
                 </div>
+              <div className="mt-3 flex flex-wrap gap-2 sm:mt-0 sm:ml-5">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--color-primary)] px-3.5 py-2.5 text-xs font-bold text-slate-950 transition hover:brightness-110">
+                  <FiCamera size={15} /> {uploadingImage ? "Uploading..." : profile.profileImage?.url ? "Change photo" : "Upload photo"}
+                  <input key={imageInputKey} type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={handleImageUpload} disabled={uploadingImage} className="sr-only" />
+                </label>
+                {profile.profileImage?.url && <button type="button" onClick={handleImageRemove} disabled={removingImage} className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 px-3.5 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 disabled:opacity-50"><FiTrash2 size={14} /> {removingImage ? "Removing..." : "Remove"}</button>}
+              </div>
               </div>
               <span className={`mb-1 inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${profile.isActive ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"}`}>
                 <span className={`h-2 w-2 rounded-full ${profile.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
