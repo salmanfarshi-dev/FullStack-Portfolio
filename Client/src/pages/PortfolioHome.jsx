@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -196,8 +196,32 @@ const fadeUp = {
   },
 };
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+
 const PortfolioHome = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [resume, setResume] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch(`${API_URL}/resume`)
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Unable to load resume.");
+        return data;
+      })
+      .then((data) => {
+        if (active && data.resume?.isVisible && data.resume?.fileUrl) setResume(data.resume);
+      })
+      .catch((error) => console.error("Public resume could not be loaded:", error.message));
+    return () => { active = false; };
+  }, []);
+
+  const handleResumeDownload = () => {
+    fetch(`${API_URL}/resume/download`, { method: "POST" }).catch((error) =>
+      console.error("Resume download tracking failed:", error.message),
+    );
+  };
 
   const [activeFilter, setActiveFilter] = useState("All");
   const [contactForm, setContactForm] = useState({
@@ -443,6 +467,20 @@ const PortfolioHome = () => {
                   <Mail size={18} />
                   Contact Me
                 </button>
+
+                {resume && (
+                  <a
+                    href={resume.fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={handleResumeDownload}
+                    className="flex items-center gap-3 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-7 py-4 font-semibold text-cyan-300 transition hover:bg-cyan-400 hover:text-[#080d16]"
+                    aria-label="Download CV PDF"
+                  >
+                    <Download size={18} />
+                    Download CV
+                  </a>
+                )}
               </div>
 
               <div className="mt-12 flex items-center gap-5">
