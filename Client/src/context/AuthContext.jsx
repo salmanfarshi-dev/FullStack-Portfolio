@@ -51,8 +51,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateAdmin = (updates) => {
+    setAdmin((current) => current ? { ...current, ...updates } : current);
+  };
+
   const value = {
     admin,
+    updateAdmin,
     loading,
     isAuthenticated: Boolean(admin),
     login,
