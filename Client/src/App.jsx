@@ -23,6 +23,7 @@ import Notifications from "./pages/admin/Notifications";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import Analytics from "./pages/admin/Analytics";
 import ActivityLogs from "./pages/admin/ActivityLogs";
+import Resume from "./pages/admin/Resume";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 
 import PortfolioHome from "./pages/PortfolioHome";
@@ -58,7 +59,7 @@ const App = () => {
               <Route path="/admin/notifications" element={<Notifications />} />
               <Route path="/admin/analytics" element={<Analytics />} />
               <Route path="/admin/activity-logs" element={<ActivityLogs />} />
-              <Route path="/admin/resume" element={<AdminPlaceholder title="Resume Management" description="Manage and update the resume displayed on your portfolio." />} />
+              <Route path="/admin/resume" element={<Resume />} />
               <Route path="/admin/seo" element={<AdminPlaceholder title="SEO Settings" description="Manage search engine metadata and portfolio discoverability." />} />
               <Route path="/admin/settings" element={<AdminPlaceholder title="Website Settings" description="Configure your portfolio website preferences." />} />
               <Route path="/admin/backups" element={<AdminPlaceholder title="Backups" description="Manage portfolio data backup and restore options." />} />
