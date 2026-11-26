@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Hero from "../models/Hero.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const allowedFields = [
   "greeting",
@@ -88,6 +89,7 @@ export const createHero = async (req, res) => {
     }
 
     const hero = await Hero.create(heroData);
+    await createActivityLog({ admin: req.admin, action: "hero_created", module: "hero", description: "Created portfolio hero section.", targetId: hero._id.toString(), targetName: hero.name || "Hero section", req });
 
     return res.status(201).json({
       success: true,
@@ -195,6 +197,7 @@ export const updateHero = async (req, res) => {
     Object.assign(hero, updates);
 
     await hero.save();
+    await createActivityLog({ admin: req.admin, action: "hero_updated", module: "hero", description: "Updated portfolio hero section.", targetId: hero._id.toString(), targetName: hero.name || "Hero section", req });
 
     return res.status(200).json({
       success: true,
