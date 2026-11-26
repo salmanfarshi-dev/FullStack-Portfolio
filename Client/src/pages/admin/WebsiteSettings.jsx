@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   FiGlobe, FiSave, FiRefreshCw, FiAlertCircle, FiCheckCircle,
   FiImage, FiMail, FiPhone, FiMapPin, FiPalette, FiShield,
-  FiToggleLeft, FiEye, FiClock, FiRotateCcw,
+  FiClock, FiRotateCcw,
 } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
