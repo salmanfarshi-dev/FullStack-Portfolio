@@ -11,7 +11,6 @@ const visitorSessionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-visitorSessionSchema.index({ lastSeen: 1 });
 visitorSessionSchema.index({ lastSeen: 1 }, { expireAfterSeconds: 86400 });
 
 const VisitorSession = mongoose.model("VisitorSession", visitorSessionSchema);
