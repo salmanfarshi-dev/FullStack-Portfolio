@@ -105,6 +105,29 @@ export const getActivityLogs = async (req, res) => {
       filter.status = req.query.status;
     }
 
+    if (req.query.from || req.query.to) {
+      const from = req.query.from ? new Date(`${req.query.from}T00:00:00.000Z`) : null;
+      const to = req.query.to ? new Date(`${req.query.to}T23:59:59.999Z`) : null;
+
+      if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid activity date range.",
+        });
+      }
+
+      if (from && to && from > to) {
+        return res.status(400).json({
+          success: false,
+          message: "The start date must be before or equal to the end date.",
+        });
+      }
+
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = from;
+      if (to) filter.createdAt.$lte = to;
+    }
+
     if (req.query.search) {
       const search = String(req.query.search).trim().slice(0, 100);
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
