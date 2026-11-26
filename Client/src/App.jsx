@@ -25,6 +25,7 @@ import ActivityLogs from "./pages/admin/ActivityLogs";
 import Resume from "./pages/admin/Resume";
 import Profile from "./pages/admin/Profile";
 import WebsiteSettings from "./pages/admin/WebsiteSettings";
+import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 
 import PortfolioHome from "./pages/PortfolioHome";
