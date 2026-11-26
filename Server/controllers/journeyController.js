@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Journey from "../models/Journey.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const allowedFields = [
   "title",
@@ -141,6 +142,7 @@ export const createJourney = async (req, res) => {
     }
 
     const journey = await Journey.create(journeyData);
+    await createActivityLog({ admin: req.admin, action: "journey_created", module: "journeys", description: `Created journey "${journey.title}".`, targetId: journey._id.toString(), targetName: journey.title, req });
 
     return res.status(201).json({
       success: true,
@@ -240,6 +242,7 @@ export const updateJourney = async (req, res) => {
     Object.assign(journey, updates);
 
     await journey.save();
+    await createActivityLog({ admin: req.admin, action: "journey_updated", module: "journeys", description: `Updated journey "${journey.title}".`, targetId: journey._id.toString(), targetName: journey.title, req });
 
     return res.status(200).json({
       success: true,
@@ -276,6 +279,8 @@ export const deleteJourney = async (req, res) => {
         message: "Journey not found.",
       });
     }
+
+    await createActivityLog({ admin: req.admin, action: "journey_deleted", module: "journeys", description: `Deleted journey "${journey.title}".`, targetId: journey._id.toString(), targetName: journey.title, req });
 
     return res.status(200).json({
       success: true,
