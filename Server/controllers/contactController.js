@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Contact from "../models/Contact.js";
 import { sendContactNotification } from "../services/emailService.js";
 import { createNotification } from "./notificationController.js";
+import { createActivityLog } from "./activityLogController.js";
 
 // Submit Contact Message (Public)
 export const createContact = async (req, res) => {
@@ -281,6 +282,7 @@ export const updateContact = async (req, res) => {
     }
 
     await contact.save();
+    await createActivityLog({ admin: req.admin, action: "contact_updated", module: "contact", description: `Updated contact message from "${contact.name}".`, targetId: contact._id.toString(), targetName: contact.name, req });
 
     return res.status(200).json({
       success: true,
@@ -317,6 +319,8 @@ export const deleteContact = async (req, res) => {
         message: "Contact message not found.",
       });
     }
+
+    await createActivityLog({ admin: req.admin, action: "contact_deleted", module: "contact", description: `Deleted contact message from "${contact.name}".`, targetId: contact._id.toString(), targetName: contact.name, req });
 
     return res.status(200).json({
       success: true,
