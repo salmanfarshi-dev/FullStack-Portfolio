@@ -27,7 +27,7 @@ import Profile from "./pages/admin/Profile";
 import WebsiteSettings from "./pages/admin/WebsiteSettings";
 import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 import AnalyticsTracker from "./components/AnalyticsTracker";
-
+import ProjectDetails from "./pages/ProjectDetails";
 import PortfolioHome from "./pages/PortfolioHome";
 
 const App = () => {
@@ -38,6 +38,7 @@ const App = () => {
         <Routes>
           {/* Public Portfolio */}
           <Route path="/" element={<PortfolioHome />} />
+          <Route path="/projects/:slug" element={<ProjectDetails />} />
 
           {/* Admin Authentication */}
           <Route element={<PublicRoute />}>
