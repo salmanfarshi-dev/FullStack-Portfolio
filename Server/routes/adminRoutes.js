@@ -1,11 +1,14 @@
 import express from "express";
 
-import protectAdmin from "../middleware/authMiddleware.js";\nimport profileImageUpload from "../middleware/profileImageUpload.js";
+import protectAdmin from "../middleware/authMiddleware.js";
+import profileImageUpload from "../middleware/profileImageUpload.js";
 
 import {
   getAdminProfile,
   updateAdminProfile,
-  changeAdminPassword,\n  uploadAdminProfileImage,\n  deleteAdminProfileImage,
+  changeAdminPassword,
+  uploadAdminProfileImage,
+  deleteAdminProfileImage,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
