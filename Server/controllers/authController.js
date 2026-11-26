@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import Admin from "../models/Admin.js";
 import { sendPasswordResetEmail } from "../services/passwordResetEmailService.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const COOKIE_NAME = "admin_token";
 
@@ -62,6 +63,15 @@ export const loginAdmin = async (req, res) => {
     const isPasswordCorrect = await admin.comparePassword(password);
 
     if (!isPasswordCorrect) {
+      await createActivityLog({
+        admin,
+        action: "login_failed",
+        module: "auth",
+        description: "A failed administrator login attempt was detected.",
+        status: "failed",
+        req,
+      });
+
       return res.status(401).json({
         success: false,
         message: "Invalid email or password.",
@@ -72,8 +82,15 @@ export const loginAdmin = async (req, res) => {
     await admin.save();
 
     const token = generateToken(admin);
-
     res.cookie(COOKIE_NAME, token, getCookieOptions());
+
+    await createActivityLog({
+      admin,
+      action: "login",
+      module: "auth",
+      description: "Administrator signed in successfully.",
+      req,
+    });
 
     return res.status(200).json({
       success: true,
@@ -116,6 +133,14 @@ export const logoutAdmin = async (req, res) => {
     if (admin) {
       admin.tokenVersion = (admin.tokenVersion ?? 0) + 1;
       await admin.save();
+
+      await createActivityLog({
+        admin,
+        action: "logout",
+        module: "auth",
+        description: "Administrator signed out.",
+        req,
+      });
     }
 
     res.clearCookie(COOKIE_NAME, getCookieOptions());
@@ -148,7 +173,6 @@ export const forgotPassword = async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-
     const admin = await Admin.findOne({
       email: normalizedEmail,
       isActive: true,
@@ -160,14 +184,9 @@ export const forgotPassword = async (req, res) => {
         "If an active admin account exists with this email, a password reset link will be sent.",
     };
 
-    if (!admin) {
-      return res.status(200).json(genericResponse);
-    }
+    if (!admin) return res.status(200).json(genericResponse);
 
-    // Generate secure random token
     const resetToken = crypto.randomBytes(32).toString("hex");
-
-    // Store only the token hash
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
@@ -175,7 +194,6 @@ export const forgotPassword = async (req, res) => {
 
     admin.resetPasswordToken = hashedToken;
     admin.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
-
     await admin.save();
 
     const clientUrl = process.env.CLIENT_URL;
@@ -184,9 +202,7 @@ export const forgotPassword = async (req, res) => {
       admin.resetPasswordToken = null;
       admin.resetPasswordExpires = null;
       await admin.save();
-
       console.error("CLIENT_URL is not configured.");
-
       return res.status(500).json({
         success: false,
         message: "Password reset service is currently unavailable.",
@@ -194,7 +210,6 @@ export const forgotPassword = async (req, res) => {
     }
 
     const resetUrl = `${clientUrl.replace(/\/$/, "")}/admin/reset-password?token=${resetToken}`;
-
     const emailSent = await sendPasswordResetEmail(admin, resetUrl);
 
     if (!emailSent) {
@@ -206,7 +221,6 @@ export const forgotPassword = async (req, res) => {
     return res.status(200).json(genericResponse);
   } catch (error) {
     console.error("Forgot Password Error:", error.message);
-
     return res.status(500).json({
       success: false,
       message: "Unable to process your password reset request.",
@@ -251,9 +265,7 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash the received reset token
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
     const admin = await Admin.findOne({
       resetPasswordToken: hashedToken,
       resetPasswordExpires: { $gt: new Date() },
@@ -276,15 +288,19 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Update password and invalidate existing sessions
     admin.password = newPassword;
     admin.tokenVersion = (admin.tokenVersion ?? 0) + 1;
-
-    // Invalidate reset token
     admin.resetPasswordToken = null;
     admin.resetPasswordExpires = null;
-
     await admin.save();
+
+    await createActivityLog({
+      admin,
+      action: "password_reset",
+      module: "auth",
+      description: "Administrator password was reset successfully.",
+      req,
+    });
 
     return res.status(200).json({
       success: true,
@@ -293,7 +309,6 @@ export const resetPassword = async (req, res) => {
     });
   } catch (error) {
     console.error("Reset Password Error:", error.message);
-
     return res.status(500).json({
       success: false,
       message: "Unable to reset password.",
