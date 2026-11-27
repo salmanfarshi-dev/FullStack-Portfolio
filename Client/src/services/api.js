@@ -1,4 +1,6 @@
-const API_BASE_URL = "http://localhost:5000/api/v1";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"
+).replace(/\/$/, "");
 
 const apiRequest = async (endpoint, options = {}) => {
   const { method = "GET", body, headers = {} } = options;
