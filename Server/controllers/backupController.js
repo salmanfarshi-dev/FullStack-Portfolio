@@ -15,6 +15,7 @@ import Notification from "../models/Notification.js";
 import ActivityLog from "../models/ActivityLog.js";
 
 import Backup from "../models/Backup.js";
+import { createActivityLog } from "./activityLogController.js";
 
 // Available Backup Collections
 const backupCollections = {
@@ -133,6 +134,17 @@ export const exportBackup = async (req, res) => {
       completedAt: new Date(),
     });
 
+    await createActivityLog({
+      admin: req.admin,
+      action: "EXPORT_BACKUP",
+      module: "system",
+      description: `Exported ${type} backup (${recordCount} records).`,
+      targetId: fileName,
+      targetName: fileName,
+      metadata: { type, recordCount, fileSize: buffer.length },
+      req,
+    });
+
     // Download JSON File
     res.setHeader("Content-Type", "application/json; charset=utf-8");
 
@@ -198,6 +210,16 @@ export const deleteBackupHistory = async (req, res) => {
         message: "Backup record not found.",
       });
     }
+
+    await createActivityLog({
+      admin: req.admin,
+      action: "DELETE_BACKUP_HISTORY",
+      module: "system",
+      description: "Deleted a backup history record.",
+      targetId: backup._id.toString(),
+      targetName: backup.fileName,
+      req,
+    });
 
     return res.status(200).json({
       success: true,

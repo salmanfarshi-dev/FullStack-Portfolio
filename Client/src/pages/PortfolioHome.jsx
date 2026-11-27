@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import {
@@ -21,225 +22,289 @@ import {
   Send,
   MapPin,
   Download,
-  CheckCircle2,
 } from "lucide-react";
+
 import Footer from "../components/Footer";
 import { FiGithub, FiLinkedin } from "react-icons/fi";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+
+/* =========================================
+   STATIC PROJECTS
+   Add frontend-only projects here.
+========================================= */
+
+const staticProjects = [
+  {
+    id: "hishabio-static",
+    slug: "hishabio",
+    name: "Hishabio",
+    category: "Full Stack",
+    description:
+      "A full-stack shared expense management platform that helps families, friends, and roommates manage group expenses, split bills, track balances, and record settlements with ease.",
+    technologies: [
+      "React",
+      "JavaScript",
+      "Tailwind CSS",
+      "Node.js",
+      "Express.js",
+      "MongoDB",
+      "Mongoose",
+      "JWT",
+      "Cloudinary",
+      "Recharts",
+    ],
+    github: "https://github.com/salmanfarshi-dev/Hishabio",
+    live: "https://myhishabio.vercel.app",
+    thumbnail: "",
+    featured: true,
+    isStatic: true,
+  },
+];
+
 const navLinks = [
   { label: "Home", target: "home" },
-
   { label: "About", target: "about" },
-
   { label: "Tech Stack", target: "tech-stack" },
-
   { label: "Projects", target: "projects" },
-
   { label: "Journey", target: "journey" },
-
   { label: "Contact", target: "contact" },
 ];
 
 const skills = [
   {
     title: "Frontend Development",
-
     icon: Code2,
-
     color: "from-cyan-400 to-blue-500",
-
     items: [
       "HTML5",
-
       "CSS3",
-
       "JavaScript",
-
       "React.js",
-
       "Tailwind CSS",
-
       "Redux",
-
       "React Router",
-
       "Framer Motion",
     ],
   },
-
   {
     title: "Backend Development",
-
     icon: Server,
-
     color: "from-violet-400 to-purple-500",
-
     items: [
       "Node.js",
-
       "Express.js",
-
       "REST APIs",
-
       "JWT Authentication",
-
       "Middleware",
     ],
   },
-
   {
     title: "Database & Tools",
-
     icon: Database,
-
     color: "from-blue-400 to-cyan-500",
-
     items: ["MongoDB", "Mongoose", "Git", "GitHub", "VS Code", "Postman"],
-  },
-];
-
-const projects = [
-  {
-    name: "WaitLess",
-
-    category: "Full Stack",
-
-    number: "01",
-
-    description:
-      "A live queue management platform designed to simplify waiting experiences and help businesses manage customer queues efficiently.",
-
-    technologies: ["React", "Node.js", "Express.js", "MongoDB"],
-
-    featured: true,
-  },
-
-  {
-    name: "MyHisabio",
-
-    category: "Full Stack",
-
-    number: "02",
-
-    description:
-      "A personal finance and expense management project focused on organizing transactions and making financial tracking easier.",
-
-    technologies: ["React", "Node.js", "Express.js", "MongoDB"],
-
-    featured: true,
-  },
-
-  {
-    name: "Yumora",
-
-    category: "Frontend",
-
-    number: "03",
-
-    description:
-      "A modern e-commerce experience with product browsing, shopping features and a responsive user interface.",
-
-    technologies: ["React", "JavaScript", "Tailwind CSS"],
-
-    github: "https://github.com/salmanfarshi-dev/Yumora",
-
-    live: "https://yumora-project.vercel.app/",
-
-    featured: true,
   },
 ];
 
 const journey = [
   {
     year: "Learning",
-
     title: "Started with Web Development",
-
     description:
       "Built a strong foundation in HTML, CSS, JavaScript and responsive web design.",
-
     icon: GraduationCap,
   },
-
   {
     year: "Frontend",
-
     title: "React.js Development",
-
     description:
       "Started building interactive interfaces and real-world frontend applications using React.",
-
     icon: Code2,
   },
-
   {
     year: "Expanding",
-
     title: "Exploring Full Stack Development",
-
     description:
       "Expanding my development skills with Node.js, Express.js, MongoDB and REST API development.",
-
     icon: Terminal,
   },
 ];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 35 },
-
   visible: {
     opacity: 1,
-
     y: 0,
-
     transition: { duration: 0.65, ease: "easeOut" },
   },
 };
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-
 const PortfolioHome = () => {
+  const navigate = useNavigate();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [resume, setResume] = useState(null);
 
-  useEffect(() => {
-    let active = true;
-    fetch(`${API_URL}/resume`)
-      .then(async (response) => {
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.message || "Unable to load resume.");
-        return data;
-      })
-      .then((data) => {
-        if (active && data.resume?.isVisible && data.resume?.fileUrl) setResume(data.resume);
-      })
-      .catch((error) => console.error("Public resume could not be loaded:", error.message));
-    return () => { active = false; };
-  }, []);
-
-  const handleResumeDownload = () => {
-    fetch(`${API_URL}/resume/download`, { method: "POST" }).catch((error) =>
-      console.error("Resume download tracking failed:", error.message),
-    );
-  };
+  // Hishabio is available immediately from frontend code.
+  const [projects, setProjects] = useState(staticProjects);
+  const [projectsLoading, setProjectsLoading] = useState(true);
 
   const [activeFilter, setActiveFilter] = useState("All");
+
   const [contactForm, setContactForm] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
   });
-  const [contactStatus, setContactStatus] = useState({ type: "", text: "" });
+
+  const [contactStatus, setContactStatus] = useState({
+    type: "",
+    text: "",
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Same-page smooth scrolling without changing the URL.
+
+  /* =========================================
+     FETCH PUBLIC RESUME
+  ========================================= */
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchResume = async () => {
+      try {
+        const response = await fetch(`${API_URL}/resume`);
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.message || "Unable to load resume.");
+        }
+
+        if (active && data.resume?.isVisible && data.resume?.fileUrl) {
+          setResume(data.resume);
+        }
+      } catch (error) {
+        console.error("Public resume could not be loaded:", error.message);
+      }
+    };
+
+    fetchResume();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  /* =========================================
+     TRACK RESUME DOWNLOAD
+  ========================================= */
+
+  const handleResumeDownload = () => {
+    fetch(`${API_URL}/resume/download`, {
+      method: "POST",
+    }).catch((error) =>
+      console.error("Resume download tracking failed:", error.message),
+    );
+  };
+
+  /* =========================================
+     FETCH BACKEND PROJECTS
+     Static Hishabio is always preserved.
+  ========================================= */
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${API_URL}/projects`);
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Failed to load projects.");
+        }
+
+        const backendProjects = (data.projects || [])
+          // Prevent duplicate Hishabio if it exists in database.
+          .filter(
+            (project) =>
+              (project.slug || "").toLowerCase() !== "hishabio",
+          )
+          .map((project) => ({
+            id: project._id,
+            slug: project.slug,
+            name: project.title,
+
+            category:
+              project.category === "fullstack"
+                ? "Full Stack"
+                : project.category === "frontend"
+                  ? "Frontend"
+                  : project.category === "backend"
+                    ? "Backend"
+                    : "Mini Projects",
+
+            description:
+              project.shortDescription || project.description || "",
+
+            technologies: project.technologies || [],
+            github: project.githubUrl || "",
+            live: project.liveUrl || "",
+            thumbnail: project.thumbnail || "",
+            featured: project.isFeatured,
+            isStatic: false,
+          }));
+
+        if (active) {
+          // Keep backend projects and append static Hishabio.
+          const combinedProjects = [
+            ...backendProjects,
+            staticProjects[0],
+          ].map((project, index) => ({
+            ...project,
+            number: String(index + 1).padStart(2, "0"),
+          }));
+
+          setProjects(combinedProjects);
+        }
+      } catch (error) {
+        console.error("Projects loading error:", error);
+
+        if (active) {
+          // If backend fails, Hishabio still remains visible.
+          setProjects(
+            staticProjects.map((project, index) => ({
+              ...project,
+              number: String(index + 1).padStart(2, "0"),
+            })),
+          );
+        }
+      } finally {
+        if (active) {
+          setProjectsLoading(false);
+        }
+      }
+    };
+
+    fetchProjects();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  /* =========================================
+     SAME-PAGE SMOOTH SCROLL
+  ========================================= */
+
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId);
 
     if (section) {
       section.scrollIntoView({
         behavior: "smooth",
-
         block: "start",
       });
     }
@@ -247,26 +312,42 @@ const PortfolioHome = () => {
     setMenuOpen(false);
   };
 
+  /* =========================================
+     CONTACT FORM
+  ========================================= */
+
   const handleContactChange = (event) => {
     const { name, value } = event.target;
-    setContactForm((previous) => ({ ...previous, [name]: value }));
+
+    setContactForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   };
 
   const handleContactSubmit = async (event) => {
     event.preventDefault();
+
     setContactStatus({ type: "", text: "" });
 
     const { name, email, subject, message } = contactForm;
+
     if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
-      setContactStatus({ type: "error", text: "Please fill in all fields." });
+      setContactStatus({
+        type: "error",
+        text: "Please fill in all fields.",
+      });
       return;
     }
 
     setIsSubmitting(true);
+
     try {
-      const response = await fetch("http://localhost:5000/api/v1/contact", {
+      const response = await fetch(`${API_URL}/contact`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
@@ -274,17 +355,26 @@ const PortfolioHome = () => {
           message: message.trim(),
         }),
       });
+
       const result = await response.json();
+
       if (!response.ok || result.success === false) {
         throw new Error(
           result.message || "Unable to send your message. Please try again.",
         );
       }
+
       setContactStatus({
         type: "success",
         text: result.message || "Your message has been sent successfully!",
       });
-      setContactForm({ name: "", email: "", subject: "", message: "" });
+
+      setContactForm({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
     } catch (error) {
       setContactStatus({
         type: "error",
@@ -295,12 +385,22 @@ const PortfolioHome = () => {
     }
   };
 
-  const filters = ["All", "Full Stack", "Frontend", "Mini Projects"];
+  /* =========================================
+     PROJECT FILTERS
+  ========================================= */
+
+  const filters = ["All", "Full Stack", "Frontend", "Backend", "Mini Projects"];
 
   const filteredProjects =
     activeFilter === "All"
       ? projects
       : projects.filter((project) => project.category === activeFilter);
+
+  const openProjectDetails = (slug) => {
+    if (!slug) return;
+
+    navigate(`/projects/${slug}`);
+  };
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#080d16] text-white selection:bg-cyan-400 selection:text-[#080d16]">
@@ -308,9 +408,7 @@ const PortfolioHome = () => {
 
       <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden">
         <div className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-cyan-500/10 blur-[140px]" />
-
         <div className="absolute -right-40 top-[35%] h-96 w-96 rounded-full bg-violet-500/10 blur-[140px]" />
-
         <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-blue-500/5 blur-[140px]" />
       </div>
 
@@ -331,8 +429,6 @@ const PortfolioHome = () => {
               SALMAN<span className="text-cyan-400">.</span>
             </span>
           </button>
-
-          {/* Desktop Navigation */}
 
           <div className="hidden items-center gap-8 md:flex">
             {navLinks.map((link) => (
@@ -356,8 +452,6 @@ const PortfolioHome = () => {
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
-
           <button
             onClick={() => setMenuOpen((previous) => !previous)}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white md:hidden"
@@ -367,8 +461,6 @@ const PortfolioHome = () => {
             {menuOpen ? <X size={21} /> : <Menu size={21} />}
           </button>
         </nav>
-
-        {/* Mobile Navigation */}
 
         <AnimatePresence>
           {menuOpen && (
@@ -409,208 +501,187 @@ const PortfolioHome = () => {
       <main className="relative z-10">
         {/* Hero Section */}
 
-        <section
-          id="home"
-          className="scroll-mt-20 relative flex min-h-screen items-center px-5 pb-20 pt-32 sm:px-8 lg:px-10"
+       
+
+
+
+<section
+  id="home"
+  className="relative flex min-h-screen items-center overflow-hidden px-5 py-28 sm:px-8 lg:px-10"
+>
+  {/* Background Glow */}
+  <div className="pointer-events-none absolute -left-40 top-10 h-[450px] w-[450px] rounded-full bg-cyan-500/[0.08] blur-[140px]" />
+  <div className="pointer-events-none absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-blue-500/[0.10] blur-[150px]" />
+
+  <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8">
+
+    {/* LEFT: INTRODUCTION */}
+    <motion.div
+      initial={{ opacity: 0, x: -40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.9 }}
+      className="relative z-20 text-center lg:text-left"
+    >
+      {/* Availability */}
+      <div className="mb-7 inline-flex items-center gap-3 rounded-full border border-cyan-400/30 bg-cyan-400/[0.06] px-4 py-2">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-400" />
+        </span>
+        <span className="text-sm font-medium text-slate-200">
+          Hello, I'm
+        </span>
+      </div>
+
+      {/* Name */}
+      <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-[76px]">
+        Salman{" "}
+        <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
+          Farshi
+        </span>
+      </h1>
+
+      {/* Role */}
+      <h2 className="mt-5 text-2xl font-semibold text-slate-100 sm:text-3xl">
+        Full Stack{" "}
+        <span className="text-cyan-400">Developer</span>
+      </h2>
+
+      <p className="mt-6 max-w-xl text-base leading-8 text-slate-400 sm:text-lg lg:leading-9">
+        I build modern, responsive and user-focused web experiences.
+        I enjoy turning ideas into functional applications and
+        continuously expanding my skills across frontend and backend
+        development.
+      </p>
+
+      {/* Buttons */}
+      <div className="mt-9 flex flex-wrap justify-center gap-4 lg:justify-start">
+        <button
+          onClick={() => scrollToSection("projects")}
+          className="group flex items-center gap-3 rounded-full bg-cyan-400 px-7 py-4 font-bold text-[#06111b] shadow-lg shadow-cyan-400/20 transition duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:shadow-cyan-400/40"
         >
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-16 lg:grid-cols-[1.2fr_0.8fr]">
-            <motion.div initial="hidden" animate="visible" variants={fadeUp}>
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/[0.07] px-4 py-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400" />
+          View My Work
+          <ArrowUpRight
+            size={19}
+            className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+          />
+        </button>
 
-                <span className="text-xs font-medium tracking-wide text-cyan-300 sm:text-sm">
-                  Available for Opportunities
-                </span>
-              </div>
-
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-                Hello, I'm
-              </p>
-
-              <h1 className="text-5xl font-extrabold leading-[1.12] tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl">
-                Salman
-                <br />
-                <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  Farshi.
-                </span>
-              </h1>
-
-              <h2 className="mt-7 text-xl font-semibold text-slate-200 sm:text-2xl">
-                Full Stack Developer
-                <span className="text-cyan-400"> | </span>
-                MERN Stack
-              </h2>
-
-              <p className="mt-6 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
-                I build modern, responsive and user-focused web experiences. I
-                enjoy turning ideas into functional applications and
-                continuously expanding my skills across frontend and backend
-                development.
-              </p>
-
-              <div className="mt-10 flex flex-wrap gap-4">
-                <button
-                  onClick={() => scrollToSection("projects")}
-                  className="group flex items-center gap-3 rounded-xl bg-cyan-400 px-7 py-4 font-bold text-[#080d16] transition hover:bg-cyan-300"
-                >
-                  Explore My Work
-                  <ArrowUpRight
-                    size={19}
-                    className="transition group-hover:translate-x-1 group-hover:-translate-y-1"
-                  />
-                </button>
-
-                <button
-                  onClick={() => scrollToSection("contact")}
-                  className="flex items-center gap-3 rounded-xl border border-white/15 px-7 py-4 font-semibold text-white transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <Mail size={18} />
-                  Contact Me
-                </button>
-
-                {resume && (
-                  <a
-                    href={resume.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={handleResumeDownload}
-                    className="flex items-center gap-3 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-7 py-4 font-semibold text-cyan-300 transition hover:bg-cyan-400 hover:text-[#080d16]"
-                    aria-label="Download CV PDF"
-                  >
-                    <Download size={18} />
-                    Download CV
-                  </a>
-                )}
-              </div>
-
-              <div className="mt-12 flex items-center gap-5">
-                <a
-                  href="https://github.com/salmanfarshi-dev"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="GitHub"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <FiGithub size={20} />
-                </a>
-
-                <a
-                  href="https://www.linkedin.com/in/salmanfarshi-dev/"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="LinkedIn"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <FiLinkedin size={20} />
-                </a>
-
-                <a
-                  href="mailto:sfarshi222@gmail.com"
-                  aria-label="Email"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <Mail size={19} />
-                </a>
-              </div>
-            </motion.div>
-
-            {/* Hero Visual */}
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, x: 30 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="relative mx-auto w-full max-w-md"
-            >
-              <div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-cyan-400/20 via-blue-500/10 to-violet-500/20 blur-2xl" />
-
-              <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#101927] p-6 shadow-2xl shadow-cyan-950/30 sm:p-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-2">
-                    <span className="h-3 w-3 rounded-full bg-red-400" />
-
-                    <span className="h-3 w-3 rounded-full bg-yellow-400" />
-
-                    <span className="h-3 w-3 rounded-full bg-green-400" />
-                  </div>
-
-                  <span className="text-xs text-slate-500">developer.js</span>
-                </div>
-
-                <div className="mt-10 flex flex-col items-center text-center">
-                  <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-cyan-400/30 bg-gradient-to-br from-cyan-400/20 to-violet-500/20">
-                    <div className="flex h-28 w-28 items-center justify-center rounded-full bg-[#0b1421] text-5xl font-black text-cyan-300">
-                      SF
-                    </div>
-
-                    <span className="absolute bottom-1 right-2 h-5 w-5 rounded-full border-4 border-[#101927] bg-green-400" />
-                  </div>
-
-                  <h3 className="mt-7 text-2xl font-bold">Salman Farshi</h3>
-
-                  <p className="mt-2 text-sm text-cyan-300">
-                    Full Stack Developer
-                  </p>
-
-                  <div className="mt-8 w-full rounded-2xl border border-white/[0.07] bg-[#080f1b] p-5 text-left font-mono text-sm leading-8">
-                    <p>
-                      <span className="text-violet-400">const</span>{" "}
-                      <span className="text-cyan-300">developer</span> = {"{"}
-                    </p>
-
-                    <p className="pl-5 text-slate-400">
-                      name:{" "}
-                      <span className="text-green-300">"Salman Farshi"</span>,
-                    </p>
-
-                    <p className="pl-5 text-slate-400">
-                      role: <span className="text-green-300">"Full Stack"</span>
-                      ,
-                    </p>
-
-                    <p className="pl-5 text-slate-400">
-                      passion:{" "}
-                      <span className="text-green-300">
-                        "Building Web Apps"
-                      </span>
-                    </p>
-
-                    <p className="text-slate-300">{"};"}</p>
-                  </div>
-
-                  <div className="mt-6 flex w-full items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-                    <span className="text-xs text-slate-400">
-                      Current Focus
-                    </span>
-
-                    <span className="text-xs font-semibold text-cyan-300">
-                      MERN Stack
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -right-5 top-20 hidden rounded-2xl border border-white/10 bg-[#111c2b] p-4 shadow-xl sm:block">
-                <Code2 className="text-cyan-400" size={25} />
-              </div>
-
-              <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border border-white/10 bg-[#111c2b] p-4 shadow-xl sm:block">
-                <Sparkles className="text-violet-400" size={25} />
-              </div>
-            </motion.div>
-          </div>
-
-          <button
-            onClick={() => scrollToSection("about")}
-            className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-slate-500 transition hover:text-cyan-400 md:flex"
+        {resume && (
+          <a
+            href="/frontend-resume.pdf"
+            target="_blank"
+            rel="noreferrer"
+            onClick={handleResumeDownload}
+            className="flex items-center gap-3 rounded-full border border-cyan-400/60 px-7 py-4 font-semibold text-slate-200 transition duration-300 hover:-translate-y-1 hover:bg-cyan-400 hover:text-[#06111b]"
           >
-            <span className="text-[10px] uppercase tracking-[0.25em]">
-              Scroll to explore
-            </span>
+            <Download size={18} />
+            Download CV
+          </a>
+        )}
+      </div>
 
-            <ArrowDown size={19} className="animate-bounce" />
-          </button>
-        </section>
+      {/* Social Links */}
+      <div className="mt-9 flex items-center justify-center gap-4 lg:justify-start">
+        <a
+          href="https://github.com/salmanfarshi-dev"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="GitHub"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700/80 text-slate-300 transition duration-300 hover:border-cyan-400 hover:bg-cyan-400/10 hover:text-cyan-400"
+        >
+          <FiGithub size={20} />
+        </a>
+
+        <a
+          href="https://www.linkedin.com/in/salmanfarshi-dev/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="LinkedIn"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700/80 text-slate-300 transition duration-300 hover:border-cyan-400 hover:bg-cyan-400/10 hover:text-cyan-400"
+        >
+          <FiLinkedin size={20} />
+        </a>
+
+        <a
+          href="mailto:sfarshi222@gmail.com"
+          aria-label="Email"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700/80 text-slate-300 transition duration-300 hover:border-cyan-400 hover:bg-cyan-400/10 hover:text-cyan-400"
+        >
+          <Mail size={19} />
+        </a>
+      </div>
+
+      {/* Background Typography */}
+      <div className="pointer-events-none absolute -bottom-28 -left-4 -z-10 hidden select-none lg:block">
+        <span className="text-[100px] font-black uppercase tracking-tight text-transparent opacity-[0.055] [ -webkit-text-stroke:1px_#67e8f9 ]">
+          DEVELOPER
+        </span>
+      </div>
+    </motion.div>
+
+    {/* RIGHT: IMAGE COMPOSITION */}
+    <motion.div
+      initial={{ opacity: 0, x: 45, scale: 0.96 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ duration: 1, delay: 0.2 }}
+      className="relative mx-auto w-full max-w-[680px]"
+    >
+      <div className="relative mx-auto aspect-[1.08/1] w-full">
+
+        {/* Large Cyan Background Glow */}
+        <div className="absolute left-[19%] top-[19%] h-[65%] w-[65%] rounded-full bg-cyan-400/90 blur-[1px]" />
+
+        <div className="absolute left-[14%] top-[14%] h-[75%] w-[75%] rounded-full bg-cyan-400/30 blur-[65px]" />
+
+        <div className="absolute left-[24%] top-[22%] h-[58%] w-[58%] rounded-full border border-cyan-300/20" />
+
+        {/* Geometric Background Lines */}
+        <div className="absolute left-[9%] top-[27%] h-[47%] w-[82%] rotate-[-12deg] border border-cyan-400/20" />
+
+        <div className="absolute right-[13%] top-[17%] h-[55%] w-[1px] bg-gradient-to-b from-cyan-400/70 via-cyan-400/10 to-transparent" />
+
+        <div className="absolute right-[5%] top-[33%] h-[1px] w-[70%] rotate-[-12deg] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+
+        {/* Decorative Star */}
+        <div className="absolute right-[18%] top-[20%] z-20">
+          <span className="absolute h-5 w-5 animate-ping rounded-full bg-cyan-400/20" />
+          <span className="relative block h-5 w-5 text-2xl leading-4 text-cyan-300">✦</span>
+        </div>
+
+        {/* Image Glow Shadow */}
+        <div className="absolute bottom-[5%] left-[22%] h-[20%] w-[58%] rounded-full bg-cyan-400/30 blur-[55px]" />
+
+        {/* Your Image */}
+        <div className="absolute inset-0 z-10 flex items-end justify-center">
+          <img
+            src="/salman-farshi.png"
+            alt="Salman Farshi"
+            className="h-[96%] w-full object-contain object-bottom drop-shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
+          />
+        </div>
+
+       
+
+        {/* Signature */}
+        <div className="absolute bottom-[22%] right-[1%] z-30 rotate-[-8deg] sm:right-[2%]">
+          <p className="font-serif text-3xl italic tracking-wide text-slate-200 drop-shadow-lg sm:text-4xl">
+            Salman
+          </p>
+          <p className="ml-8 font-serif text-3xl italic tracking-wide text-slate-200 drop-shadow-lg sm:text-4xl">
+            Farshi
+          </p>
+          <div className="ml-8 mt-2 h-[2px] w-24 rotate-[-13deg] bg-cyan-400 shadow-[0_0_12px_#22d3ee]" />
+        </div>
+
+      </div>
+    </motion.div>
+  </div>
+</section>
+
+
+
+
 
         {/* About Section */}
 
@@ -690,33 +761,22 @@ const PortfolioHome = () => {
                 {[
                   {
                     icon: Code2,
-
                     title: "Frontend Focus",
-
                     description: "Building responsive user interfaces",
                   },
-
                   {
                     icon: Server,
-
                     title: "Backend Learning",
-
                     description: "Developing server-side applications",
                   },
-
                   {
                     icon: Layers,
-
                     title: "Clean Structure",
-
                     description: "Writing organized and maintainable code",
                   },
-
                   {
                     icon: Sparkles,
-
                     title: "Continuous Growth",
-
                     description: "Learning and improving every day",
                   },
                 ].map((item) => (
@@ -849,107 +909,206 @@ const PortfolioHome = () => {
               ))}
             </div>
 
-            <motion.div layout className="mt-9 grid gap-6 lg:grid-cols-2">
-              <AnimatePresence mode="popLayout">
-                {filteredProjects.map((project) => (
-                  <motion.article
-                    layout
-                    key={project.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 15 }}
-                    transition={{ duration: 0.3 }}
-                    className="group overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d1522] transition duration-300 hover:-translate-y-1 hover:border-cyan-400/30"
-                  >
-                    <div className="relative flex h-52 items-center justify-center overflow-hidden bg-gradient-to-br from-cyan-400/10 via-blue-500/10 to-violet-500/10">
-                      <div className="absolute inset-0 opacity-20">
-                        <div className="absolute left-1/4 top-0 h-40 w-40 rounded-full border border-cyan-300/40" />
+            {/* Projects Loading */}
 
-                        <div className="absolute bottom-0 right-1/4 h-40 w-40 rounded-full border border-violet-300/40" />
-                      </div>
+            {projectsLoading && (
+              <div className="mt-10 py-12 text-center">
+                <div className="mx-auto h-9 w-9 animate-spin rounded-full border-2 border-cyan-400/20 border-t-cyan-400" />
 
-                      <span className="relative text-6xl font-black tracking-tighter text-white/10 transition duration-500 group-hover:scale-110">
-                        {project.name}
-                      </span>
-
-                      <span className="absolute left-6 top-6 rounded-full border border-cyan-400/20 bg-[#080d16]/70 px-3 py-1.5 text-xs font-semibold text-cyan-300">
-                        {project.category}
-                      </span>
-
-                      <span className="absolute right-6 top-6 font-mono text-sm text-slate-500">
-                        /{project.number}
-                      </span>
-                    </div>
-
-                    <div className="p-7">
-                      <div className="flex items-center justify-between gap-4">
-                        <h3 className="text-2xl font-bold transition group-hover:text-cyan-300">
-                          {project.name}
-                        </h3>
-
-                        <BriefcaseBusiness
-                          size={21}
-                          className="shrink-0 text-cyan-400"
-                        />
-                      </div>
-
-                      <p className="mt-4 min-h-20 text-sm leading-7 text-slate-400">
-                        {project.description}
-                      </p>
-
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {project.technologies.map((technology) => (
-                          <span
-                            key={technology}
-                            className="rounded-md bg-white/[0.05] px-3 py-1.5 text-xs text-slate-300"
-                          >
-                            {technology}
-                          </span>
-                        ))}
-                      </div>
-
-                      {(project.github || project.live) && (
-                        <div className="mt-7 flex flex-wrap gap-3 border-t border-white/[0.07] pt-5">
-                          {project.github && (
-                            <a
-                              href={project.github}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
-                            >
-                              <FiGithub size={16} />
-                              GitHub
-                              <ExternalLink size={14} />
-                            </a>
-                          )}
-
-                          {project.live && (
-                            <a
-                              href={project.live}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex items-center gap-2 rounded-lg bg-cyan-400 px-4 py-2.5 text-sm font-bold text-[#080d16] transition hover:bg-cyan-300"
-                            >
-                              Live Demo
-                              <ArrowUpRight size={16} />
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </motion.article>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-
-            {filteredProjects.length === 0 && (
-              <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.025] py-16 text-center">
-                <Layers size={35} className="mx-auto text-slate-500" />
-
-                <p className="mt-4 text-slate-400">
-                  No projects available in this category yet.
+                <p className="mt-4 text-sm text-slate-400">
+                  Loading projects...
                 </p>
               </div>
+            )}
+
+            {/* Project Cards */}
+
+            {!projectsLoading && (
+              <>
+                <motion.div layout className="mt-9 grid gap-6 lg:grid-cols-2">
+                  <AnimatePresence mode="popLayout">
+                    {filteredProjects.map((project) => {
+                      const isMiniProject =
+                        (project.category || "")
+                          .toLowerCase()
+                          .includes("mini") ||
+                        (project.name || "")
+                          .toLowerCase()
+                          .includes("calculator") ||
+                        (project.slug || "")
+                          .toLowerCase()
+                          .includes("calculator");
+
+                      return (
+                        <motion.article
+                          layout
+                          key={project.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 15 }}
+                          transition={{ duration: 0.3 }}
+                          onClick={() => {
+                            if (!isMiniProject) {
+                              openProjectDetails(project.slug);
+                            }
+                          }}
+                          onKeyDown={(event) => {
+                            if (
+                              !isMiniProject &&
+                              event.target === event.currentTarget &&
+                              (event.key === "Enter" || event.key === " ")
+                            ) {
+                              event.preventDefault();
+                              openProjectDetails(project.slug);
+                            }
+                          }}
+                          role={isMiniProject ? undefined : "link"}
+                          tabIndex={isMiniProject ? undefined : 0}
+                          aria-label={
+                            isMiniProject
+                              ? `${project.name} mini project`
+                              : `View ${project.name} project details`
+                          }
+                          className={`group overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d1522] transition duration-300 hover:-translate-y-1 hover:border-cyan-400/30 ${
+                            isMiniProject
+                              ? ""
+                              : "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                          }`}
+                        >
+                          {/* Project Thumbnail */}
+
+                          <div className="relative flex h-52 items-center justify-center overflow-hidden bg-gradient-to-br from-cyan-400/10 via-blue-500/10 to-violet-500/10">
+                            {project.thumbnail ? (
+                              <img
+                                src={project.thumbnail}
+                                alt={`${project.name} preview`}
+                                loading="lazy"
+                                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <>
+                                <div className="absolute inset-0 opacity-20">
+                                  <div className="absolute left-1/4 top-0 h-40 w-40 rounded-full border border-cyan-300/40" />
+                                  <div className="absolute bottom-0 right-1/4 h-40 w-40 rounded-full border border-violet-300/40" />
+                                </div>
+
+                                <span className="relative text-6xl font-black tracking-tighter text-white/10 transition duration-500 group-hover:scale-110">
+                                  {project.name}
+                                </span>
+                              </>
+                            )}
+
+                            <span className="absolute left-6 top-6 rounded-full border border-cyan-400/20 bg-[#080d16]/80 px-3 py-1.5 text-xs font-semibold text-cyan-300 backdrop-blur">
+                              {isMiniProject ? "Mini Project" : project.category}
+                            </span>
+
+                            <span className="absolute right-6 top-6 font-mono text-sm text-white/60">
+                              /{project.number}
+                            </span>
+
+                            {!isMiniProject && (
+                              <div className="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-[#080d16]/70 text-cyan-300 opacity-0 backdrop-blur transition duration-300 group-hover:opacity-100">
+                                <ArrowUpRight size={20} />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Project Information */}
+
+                          <div className="p-7">
+                            <div className="flex items-center justify-between gap-4">
+                              <h3 className="text-2xl font-bold transition group-hover:text-cyan-300">
+                                {project.name}
+                              </h3>
+
+                              <BriefcaseBusiness
+                                size={21}
+                                className="shrink-0 text-cyan-400"
+                              />
+                            </div>
+
+                            <p className="mt-4 min-h-20 text-sm leading-7 text-slate-400">
+                              {project.description}
+                            </p>
+
+                            {/* Technologies */}
+
+                            <div className="mt-5 flex flex-wrap gap-2">
+                              {project.technologies.map((technology) => (
+                                <span
+                                  key={technology}
+                                  className="rounded-md bg-white/[0.05] px-3 py-1.5 text-xs text-slate-300"
+                                >
+                                  {technology}
+                                </span>
+                              ))}
+                            </div>
+
+                            {/* Project Links */}
+
+                            {(project.github || project.live) && (
+                              <div className="mt-7 flex flex-wrap gap-3 border-t border-white/[0.07] pt-5">
+                                {project.github && (
+                                  <a
+                                    href={project.github}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={(event) => event.stopPropagation()}
+                                    className="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
+                                  >
+                                    <FiGithub size={16} />
+                                    GitHub
+                                    <ExternalLink size={14} />
+                                  </a>
+                                )}
+
+                                {project.live && (
+                                  <a
+                                    href={project.live}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={(event) => event.stopPropagation()}
+                                    className="flex items-center gap-2 rounded-lg bg-cyan-400 px-4 py-2.5 text-sm font-bold text-[#080d16] transition hover:bg-cyan-300"
+                                  >
+                                    Live Demo
+                                    <ArrowUpRight size={16} />
+                                  </a>
+                                )}
+                              </div>
+                            )}
+
+                            {!isMiniProject && (
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  openProjectDetails(project.slug);
+                                }}
+                                className="mt-5 flex w-full items-center justify-between border-t border-white/[0.07] pt-5 text-sm font-semibold text-cyan-400 transition hover:text-cyan-300"
+                              >
+                                View Project Details
+                                <ArrowUpRight size={18} />
+                              </button>
+                            )}
+                          </div>
+                        </motion.article>
+                      );
+                    })}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Empty Projects */}
+
+                {filteredProjects.length === 0 && (
+                  <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.025] py-16 text-center">
+                    <Layers size={35} className="mx-auto text-slate-500" />
+
+                    <p className="mt-4 text-slate-400">
+                      No projects available in this category yet.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
@@ -1013,6 +1172,7 @@ const PortfolioHome = () => {
         </section>
 
         {/* Contact Section */}
+
         <section
           id="contact"
           className="scroll-mt-20 border-t border-white/[0.06] px-5 py-24 sm:px-8 lg:px-10"
@@ -1023,25 +1183,30 @@ const PortfolioHome = () => {
                 <p className="mb-3 text-sm font-bold uppercase tracking-[0.25em] text-cyan-400">
                   Get In Touch
                 </p>
+
                 <h2 className="text-4xl font-extrabold leading-tight sm:text-5xl">
                   Let’s build something{" "}
                   <span className="text-cyan-400">great.</span>
                 </h2>
+
                 <p className="mt-6 max-w-lg leading-8 text-slate-400">
                   Have a project idea, collaboration opportunity, or just want
                   to say hello? Send me a message. I’ll get back to you as soon
                   as possible.
                 </p>
+
                 <div className="mt-9 space-y-4 text-sm text-slate-300">
                   <a
                     href="mailto:sfarshi222@gmail.com"
                     className="flex items-center gap-3 transition hover:text-cyan-400"
                   >
-                    <Mail size={18} className="text-cyan-400" />{" "}
+                    <Mail size={18} className="text-cyan-400" />
                     sfarshi222@gmail.com
                   </a>
+
                   <span className="flex items-center gap-3">
-                    <MapPin size={18} className="text-cyan-400" /> Bangladesh
+                    <MapPin size={18} className="text-cyan-400" />
+                    Bangladesh
                   </span>
                 </div>
               </div>
@@ -1064,6 +1229,7 @@ const PortfolioHome = () => {
                       className="mt-2 w-full rounded-xl border border-white/10 bg-[#080f1b] px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/60"
                     />
                   </label>
+
                   <label className="block text-sm font-medium text-slate-300">
                     Email Address
                     <input
@@ -1079,6 +1245,7 @@ const PortfolioHome = () => {
                     />
                   </label>
                 </div>
+
                 <label className="mt-5 block text-sm font-medium text-slate-300">
                   Subject
                   <input
@@ -1091,6 +1258,7 @@ const PortfolioHome = () => {
                     className="mt-2 w-full rounded-xl border border-white/10 bg-[#080f1b] px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/60"
                   />
                 </label>
+
                 <label className="mt-5 block text-sm font-medium text-slate-300">
                   Message
                   <textarea
@@ -1104,15 +1272,21 @@ const PortfolioHome = () => {
                     className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-[#080f1b] px-4 py-3.5 text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400/60"
                   />
                 </label>
+
                 {contactStatus.text && (
                   <p
                     role="status"
                     aria-live="polite"
-                    className={`mt-5 rounded-xl border px-4 py-3 text-sm ${contactStatus.type === "success" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : "border-red-400/20 bg-red-400/10 text-red-300"}`}
+                    className={`mt-5 rounded-xl border px-4 py-3 text-sm ${
+                      contactStatus.type === "success"
+                        ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                        : "border-red-400/20 bg-red-400/10 text-red-300"
+                    }`}
                   >
                     {contactStatus.text}
                   </p>
                 )}
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -1129,7 +1303,7 @@ const PortfolioHome = () => {
 
       {/* Footer */}
 
-     <Footer onNavigate={scrollToSection} />
+      <Footer onNavigate={scrollToSection} />
     </div>
   );
 };

@@ -43,9 +43,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // API Rate Limiting
+
+// API Rate Limiting
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: process.env.NODE_ENV === "production" ? 1000 : 5000,
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: {
@@ -53,6 +55,9 @@ const apiLimiter = rateLimit({
     message: "Too many requests. Please try again later.",
   },
 });
+
+
+
 
 app.use("/api", apiLimiter);
 app.use("/api/v1/auth", authRoutes);

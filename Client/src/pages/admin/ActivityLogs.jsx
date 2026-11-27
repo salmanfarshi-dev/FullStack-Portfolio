@@ -47,6 +47,10 @@ const ActivityLogs = () => {
   const [appliedSearch, setAppliedSearch] = useState("");
   const [module, setModule] = useState("");
   const [status, setStatus] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [retentionDays, setRetentionDays] = useState("180");
+  const [cleaning, setCleaning] = useState(false);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -58,6 +62,8 @@ const ActivityLogs = () => {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (module) params.set("module", module);
       if (status) params.set("status", status);
+      if (fromDate) params.set("from", fromDate);
+      if (toDate) params.set("to", toDate);
       if (appliedSearch) params.set("search", appliedSearch);
 
       const [logsResponse, summaryResponse] = await Promise.all([
@@ -77,7 +83,7 @@ const ActivityLogs = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, module, status, appliedSearch]);
+  }, [page, module, status, fromDate, toDate, appliedSearch]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
@@ -87,11 +93,37 @@ const ActivityLogs = () => {
     setAppliedSearch(search.trim());
   };
 
+  const handleCleanup = async () => {
+    if (cleaning) return;
+    const days = Number(retentionDays);
+    if (!window.confirm(`Delete activity logs older than ${days} days? This cannot be undone.`)) return;
+
+    setCleaning(true);
+    try {
+      const response = await fetch(`${API_URL}/activity-logs/cleanup`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ days }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || "Failed to clean up activity logs.");
+      window.alert(data.message || `Deleted ${data.deletedCount || 0} old records.`);
+      await fetchLogs();
+    } catch (err) {
+      window.alert(err.message || "Unable to clean up activity logs.");
+    } finally {
+      setCleaning(false);
+    }
+  };
+
   const resetFilters = () => {
     setSearch("");
     setAppliedSearch("");
     setModule("");
     setStatus("");
+    setFromDate("");
+    setToDate("");
     setPage(1);
   };
 
@@ -119,7 +151,7 @@ const ActivityLogs = () => {
 
       <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5">
         <div className="mb-4 flex items-center gap-2 text-sm font-semibold"><FiFilter className="text-[var(--color-primary)]" /> Filter activity</div>
-        <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_190px_160px_auto]">
+        <form onSubmit={handleSearch} className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_170px_145px_150px_150px_auto]">
           <div className="relative">
             <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search action, admin or description..." className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[var(--color-primary)]" />
@@ -130,6 +162,8 @@ const ActivityLogs = () => {
           <select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-3 text-sm outline-none focus:border-[var(--color-primary)]">
             <option value="">All statuses</option><option value="success">Success</option><option value="failed">Failed</option><option value="warning">Warning</option>
           </select>
+          <label className="flex flex-col gap-1 text-xs text-[var(--color-muted)]"><span>From date</span><input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => { setFromDate(event.target.value); setPage(1); }} className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-3 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]" /></label>
+          <label className="flex flex-col gap-1 text-xs text-[var(--color-muted)]"><span>To date</span><input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => { setToDate(event.target.value); setPage(1); }} className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-3 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]" /></label>
           <div className="flex gap-2">
             <button type="submit" className="flex-1 rounded-xl bg-[var(--color-primary)] px-4 py-3 text-sm font-bold text-slate-950 transition hover:brightness-110">Search</button>
             <button type="button" onClick={resetFilters} title="Clear filters" className="rounded-xl border border-[var(--color-border)] px-3 text-[var(--color-muted)] transition hover:text-[var(--color-text)]"><FiX /></button>
@@ -193,6 +227,13 @@ const ActivityLogs = () => {
             <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((current) => current - 1)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-40"><FiChevronLeft /> Previous</button>
             <button type="button" disabled={page >= (pagination.totalPages || 1) || loading} onClick={() => setPage((current) => current + 1)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-40">Next <FiChevronRight /></button>
           </div>
+        </div>
+      </section>
+      <section className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div><h2 className="text-sm font-bold">Log retention</h2><p className="mt-1 text-xs text-[var(--color-muted)]">Permanently remove records older than the selected retention period.</p></div>
+        <div className="flex flex-wrap items-center gap-2">
+          <select value={retentionDays} onChange={(event) => setRetentionDays(event.target.value)} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"><option value="90">90 days</option><option value="180">180 days</option><option value="365">1 year</option><option value="730">2 years</option><option value="1095">3 years</option></select>
+          <button type="button" onClick={handleCleanup} disabled={cleaning} className="rounded-xl border border-red-500/30 px-4 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-500/10 disabled:opacity-50">{cleaning ? "Cleaning..." : "Clean old logs"}</button>
         </div>
       </section>
       <p className="text-right text-[10px] text-[var(--color-muted)]">Activity summaries cover the last 30 days. Sensitive request metadata is not exposed in this view.</p>

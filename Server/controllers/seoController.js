@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import SEO from "../models/SEO.js";
+import { createActivityLog } from "./activityLogController.js";
 
 const allowedFields = [
   "siteTitle",
@@ -115,6 +116,16 @@ export const createSEO = async (req, res) => {
 
     const seo = await SEO.create(seoData);
 
+    await createActivityLog({
+      admin: req.admin,
+      action: "CREATE",
+      module: "seo",
+      description: "Created website SEO settings.",
+      targetId: seo._id.toString(),
+      targetName: seo.siteTitle || "SEO Settings",
+      req,
+    });
+
     return res.status(201).json({
       success: true,
       message: "SEO settings created successfully.",
@@ -208,6 +219,16 @@ export const updateSEO = async (req, res) => {
     Object.assign(seo, updates);
 
     await seo.save();
+
+    await createActivityLog({
+      admin: req.admin,
+      action: "UPDATE",
+      module: "seo",
+      description: "Updated website SEO settings.",
+      targetId: seo._id.toString(),
+      targetName: seo.siteTitle || "SEO Settings",
+      req,
+    });
 
     return res.status(200).json({
       success: true,

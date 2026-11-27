@@ -1,5 +1,6 @@
 import Notification from "../models/Notification.js";
 import Admin from "../models/Admin.js";
+import { createActivityLog } from "./activityLogController.js";
 
 // Create Notification for Active Admins
 export const createNotification = async ({
@@ -134,6 +135,16 @@ export const markNotificationAsRead = async (req, res) => {
       });
     }
 
+    await createActivityLog({
+      admin: req.admin,
+      action: "MARK_READ",
+      module: "notifications",
+      description: "Marked a notification as read.",
+      targetId: notification._id.toString(),
+      targetName: notification.title,
+      req,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Notification marked as read.",
@@ -150,7 +161,7 @@ export const markNotificationAsRead = async (req, res) => {
 // Mark All Notifications as Read
 export const markAllNotificationsAsRead = async (req, res) => {
   try {
-    await Notification.updateMany(
+    const result = await Notification.updateMany(
       {
         recipient: req.admin._id,
         isRead: false,
@@ -162,6 +173,15 @@ export const markAllNotificationsAsRead = async (req, res) => {
         },
       },
     );
+
+    await createActivityLog({
+      admin: req.admin,
+      action: "MARK_ALL_READ",
+      module: "notifications",
+      description: `Marked ${result.modifiedCount} notifications as read.`,
+      metadata: { modifiedCount: result.modifiedCount },
+      req,
+    });
 
     return res.status(200).json({
       success: true,
@@ -190,6 +210,16 @@ export const deleteNotification = async (req, res) => {
       });
     }
 
+    await createActivityLog({
+      admin: req.admin,
+      action: "DELETE",
+      module: "notifications",
+      description: "Deleted a notification.",
+      targetId: notification._id.toString(),
+      targetName: notification.title,
+      req,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Notification deleted successfully.",
@@ -205,8 +235,17 @@ export const deleteNotification = async (req, res) => {
 // Delete All Notifications
 export const deleteAllNotifications = async (req, res) => {
   try {
-    await Notification.deleteMany({
+    const result = await Notification.deleteMany({
       recipient: req.admin._id,
+    });
+
+    await createActivityLog({
+      admin: req.admin,
+      action: "DELETE_ALL",
+      module: "notifications",
+      description: `Deleted ${result.deletedCount} notifications.`,
+      metadata: { deletedCount: result.deletedCount },
+      req,
     });
 
     return res.status(200).json({
