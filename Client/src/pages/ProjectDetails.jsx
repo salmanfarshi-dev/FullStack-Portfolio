@@ -24,9 +24,6 @@ import {
 
 import { FiGithub } from "react-icons/fi";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-
 // --------------------------------------------------
 // STATIC HISHABIO PROJECT
 // No API / MongoDB / Admin Dashboard dependency
@@ -62,6 +59,36 @@ const hishabioProject = {
   liveUrl: "https://myhishabio.vercel.app",
   githubUrl: "https://github.com/salmanfarshi-dev/Hishabio",
 
+  thumbnail: "",
+  images: [],
+};
+
+// --------------------------------------------------
+// STATIC YUMORA PROJECT
+// No portfolio backend / MongoDB dependency
+// --------------------------------------------------
+
+const yumoraProject = {
+  title: "Yumora - Food Ecommerce Platform",
+  slug: "yumora",
+  category: "frontend",
+  shortDescription:
+    "A modern food e-commerce application with product browsing, cart and wishlist management, user authentication, and checkout.",
+  description:
+    "Yumora is a frontend-focused food e-commerce application built to provide a smooth online shopping experience. It includes product discovery, category browsing, cart and wishlist management, account authentication, and an order checkout flow.",
+  technologies: [
+    "React",
+    "JavaScript",
+    "Tailwind CSS",
+    "Vite",
+    "Redux Toolkit",
+    "React Router",
+    "Firebase",
+    "Cloud Firestore",
+    "EmailJS",
+  ],
+  liveUrl: "https://yumora-project.vercel.app/",
+  githubUrl: "https://github.com/salmanfarshi-dev/Yumora",
   thumbnail: "",
   images: [],
 };
@@ -443,77 +470,32 @@ export default function ProjectDetails() {
     .toLowerCase()
     .trim();
 
-  // Hishabio is a static project.
-  const isStaticHishabio =
-    normalizedRouteSlug === "hishabio";
+  const staticProject =
+    normalizedRouteSlug === "hishabio"
+      ? hishabioProject
+      : normalizedRouteSlug === "yumora"
+        ? yumoraProject
+        : null;
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // --------------------------------------------------
-  // FETCH PROJECT
-  // HISHABIO BYPASSES API COMPLETELY
+  // LOAD STATIC PROJECT DETAILS
+  // Project details are intentionally independent of the portfolio backend.
   // --------------------------------------------------
 
   useEffect(() => {
-    // STATIC HISHABIO
-    if (isStaticHishabio) {
-      setProject(hishabioProject);
+    if (staticProject) {
+      setProject(staticProject);
       setError("");
-      setLoading(false);
-
-      // Important: Do not make an API request.
-      return;
-    }
-
-    // OTHER PROJECTS: BACKEND API
-    const controller = new AbortController();
-
-    const fetchProject = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        setProject(null);
-
-        const response = await fetch(
-          `${API_URL}/projects/${encodeURIComponent(slug)}`,
-          {
-            signal: controller.signal,
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success || !data.project) {
-          throw new Error(
-            data.message || "Project could not be found."
-          );
-        }
-
-        setProject(data.project);
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          setError(
-            err.message || "Something went wrong."
-          );
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    if (slug) {
-      fetchProject();
     } else {
-      setError("Project slug is missing.");
-      setLoading(false);
+      setProject(null);
+      setError("This project is not available in the portfolio.");
     }
-
-    return () => controller.abort();
-  }, [slug, isStaticHishabio]);
+    setLoading(false);
+  }, [normalizedRouteSlug]);
 
   // --------------------------------------------------
   // LOADING
