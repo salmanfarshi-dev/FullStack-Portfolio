@@ -372,89 +372,97 @@ const PortfolioHome = () => {
 
       {/* Navbar */}
 
-      <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/[0.06] bg-[#080d16]/85 backdrop-blur-xl">
-        <nav className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
-          <button
-            onClick={() => scrollToSection("home")}
-            className="group flex items-center gap-2"
-            aria-label="Go to home"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400 font-bold text-[#080d16] transition group-hover:rotate-6">
-              SF
-            </span>
+     
+<header className="fixed left-0 right-0 top-0 z-50 border-b border-white/[0.06] bg-[#080d16]/90 shadow-lg shadow-black/10 backdrop-blur-xl">
+  <nav className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:h-[76px] sm:px-8 lg:px-10">
 
-            <span className="text-lg font-bold tracking-wide">
-              SALMAN<span className="text-cyan-400">.</span>
-            </span>
+    {/* Logo */}
+    <button
+      onClick={() => scrollToSection("home")}
+      className="group flex shrink-0 items-center"
+      aria-label="Go to home"
+    >
+      <img
+        src="/name-logo.png"
+        alt="Salman Farshi"
+        className="h-14 w-auto max-w-[180px] object-contain transition-all duration-300 group-hover:scale-[1.04] sm:h-18 sm:max-w-[210px] lg:h-23 lg:max-w-[300px]"
+      />
+    </button>
+
+    {/* Desktop Navigation */}
+    <div className="hidden items-center gap-6 md:flex lg:gap-8">
+      {navLinks.map((link) => (
+        <button
+          key={link.target}
+          onClick={() => scrollToSection(link.target)}
+          className="relative py-2 text-sm font-medium text-slate-400 transition-colors duration-300 hover:text-cyan-400 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-cyan-400 after:transition-all after:duration-300 hover:after:w-full"
+        >
+          {link.label}
+        </button>
+      ))}
+    </div>
+
+    {/* Desktop CTA */}
+    <div className="hidden md:block">
+      <button
+        onClick={() => scrollToSection("contact")}
+        className="flex items-center gap-2 rounded-full border border-cyan-400/40 px-5 py-2.5 text-sm font-semibold text-cyan-400 transition-all duration-300 hover:border-cyan-400 hover:bg-cyan-400 hover:text-[#080d16] hover:shadow-lg hover:shadow-cyan-400/20"
+      >
+        Let's Talk
+        <ArrowUpRight size={16} />
+      </button>
+    </div>
+
+    {/* Mobile Menu Button */}
+    <button
+      onClick={() => setMenuOpen((previous) => !previous)}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-slate-200 transition hover:border-cyan-400/40 hover:text-cyan-400 md:hidden"
+      aria-label="Toggle navigation menu"
+      aria-expanded={menuOpen}
+    >
+      {menuOpen ? <X size={21} /> : <Menu size={21} />}
+    </button>
+  </nav>
+
+  {/* Mobile Navigation */}
+  <AnimatePresence>
+    {menuOpen && (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: "auto" }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+        className="overflow-hidden border-t border-white/[0.06] bg-[#080d16]/[0.98] backdrop-blur-xl md:hidden"
+      >
+        <div className="mx-auto flex max-w-7xl flex-col px-5 py-4 sm:px-8">
+
+          {navLinks.map((link, index) => (
+            <motion.button
+              key={link.target}
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.04 }}
+              onClick={() => scrollToSection(link.target)}
+              className="border-b border-white/[0.06] py-3.5 text-left text-sm font-medium text-slate-300 transition-colors duration-300 hover:pl-2 hover:text-cyan-400"
+            >
+              {link.label}
+            </motion.button>
+          ))}
+
+          <button
+            onClick={() => scrollToSection("contact")}
+            className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-cyan-400 py-3.5 text-sm font-semibold text-[#080d16] transition-all duration-300 hover:bg-cyan-300"
+          >
+            Let's Talk
+            <ArrowUpRight size={17} />
           </button>
 
-          <div className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link) => (
-              <button
-                key={link.target}
-                onClick={() => scrollToSection(link.target)}
-                className="text-sm font-medium text-slate-400 transition-colors duration-300 hover:text-cyan-400"
-              >
-                {link.label}
-              </button>
-            ))}
-          </div>
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</header>
 
-          <div className="hidden md:block">
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="flex items-center gap-2 rounded-full border border-cyan-400/40 px-5 py-2.5 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-400 hover:text-[#080d16]"
-            >
-              Let's Talk
-              <ArrowUpRight size={16} />
-            </button>
-          </div>
-
-          <button
-            onClick={() => setMenuOpen((previous) => !previous)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white md:hidden"
-            aria-label="Toggle navigation menu"
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? <X size={21} /> : <Menu size={21} />}
-          </button>
-        </nav>
-
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-              className="overflow-hidden border-t border-white/[0.06] bg-[#080d16] md:hidden"
-            >
-              <div className="mx-auto flex max-w-7xl flex-col px-5 py-5 sm:px-8">
-                {navLinks.map((link, index) => (
-                  <motion.button
-                    key={link.target}
-                    initial={{ opacity: 0, x: -15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.04 }}
-                    onClick={() => scrollToSection(link.target)}
-                    className="border-b border-white/[0.06] py-3.5 text-left text-sm font-medium text-slate-300 transition hover:text-cyan-400"
-                  >
-                    {link.label}
-                  </motion.button>
-                ))}
-
-                <button
-                  onClick={() => scrollToSection("contact")}
-                  className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-cyan-400 py-3 font-semibold text-[#080d16]"
-                >
-                  Let's Talk
-                  <ArrowUpRight size={17} />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
 
       <main className="relative z-10">
         {/* Hero Section */}
@@ -1159,7 +1167,7 @@ const PortfolioHome = () => {
                     className="flex items-center gap-3 transition hover:text-cyan-400"
                   >
                     <Mail size={18} className="text-cyan-400" />
-                    sfarshi222@gmail.com
+                    salmanfarshidevel@gmail.com
                   </a>
 
                   <span className="flex items-center gap-3">

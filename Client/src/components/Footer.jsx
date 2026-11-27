@@ -162,9 +162,15 @@ const Footer = ({ onNavigate }) => {
           <div>
             <button
               onClick={scrollToTop}
-              className="text-2xl font-extrabold tracking-wide"
+              aria-label="Back to home"
+              className="group inline-flex max-w-full items-center rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
             >
-              SALMAN<span className="text-cyan-400">.</span>
+              <img
+                src="/name-logo.png"
+                alt="Salman Farshi"
+                loading="lazy"
+                className="block h-14 w-auto max-w-[190px] object-contain object-left transition-all duration-300 group-hover:scale-[1.04] sm:h-16 sm:max-w-[220px] lg:h-22 lg:max-w-[240px]"
+              />
             </button>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-slate-400">
@@ -194,7 +200,7 @@ const Footer = ({ onNavigate }) => {
               </a>
 
               <a
-                href="mailto:sfarshi222@gmail.com"
+                href="mailto:salmanfarshidevel@gmail.com"
                 aria-label="Email"
                 className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-400/40 hover:text-cyan-400"
               >
@@ -234,7 +240,7 @@ const Footer = ({ onNavigate }) => {
               className="mt-6 flex items-center gap-3 text-sm text-slate-400 transition hover:text-cyan-400"
             >
               <Mail size={17} className="text-cyan-400" />
-              sfarshi222@gmail.com
+              salmanfarshidevel@gmail.com
               <ArrowUpRight size={14} />
             </a>
 
