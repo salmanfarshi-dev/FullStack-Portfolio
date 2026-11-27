@@ -36,20 +36,6 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 
 const staticProjects = [
   {
-    id: "waitless-static",
-    slug: "waitless",
-    name: "WaitLess - Live Queue Management",
-    category: "Full Stack",
-    description:
-      "A live queue management platform designed to reduce waiting time and help users manage queues more efficiently.",
-    technologies: ["React", "JavaScript", "Node.js", "Express.js", "MongoDB"],
-    github: "https://github.com/salmanfarshi-dev/WaitLess-Live-Queue-Management",
-    live: "",
-    thumbnail: "",
-    featured: true,
-    isStatic: true,
-  },
-  {
     id: "hishabio-static",
     slug: "hishabio",
     name: "Hishabio - Shared Expense Management",
@@ -230,98 +216,14 @@ const PortfolioHome = () => {
     );
   };
 
-  /* =========================================
-     FETCH BACKEND PROJECTS
-     Static Hishabio is always preserved.
-  ========================================= */
-
   useEffect(() => {
-    let active = true;
-
-    const fetchProjects = async () => {
-      if (!API_URL) {
-        setProjects(staticProjects.map((project, index) => ({
-          ...project,
-          number: String(index + 1).padStart(2, "0"),
-        })));
-        setProjectsLoading(false);
-        return;
-      }
-      try {
-        const response = await fetch(`${API_URL}/projects`);
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.message || "Failed to load projects.");
-        }
-
-        const backendProjects = (data.projects || [])
-          // Prevent duplicate Hishabio if it exists in database.
-          .filter(
-            (project) =>
-              (project.slug || "").toLowerCase() !== "hishabio",
-          )
-          .map((project) => ({
-            id: project._id,
-            slug: project.slug,
-            name: project.title,
-
-            category:
-              project.category === "fullstack"
-                ? "Full Stack"
-                : project.category === "frontend"
-                  ? "Frontend"
-                  : project.category === "backend"
-                    ? "Backend"
-                    : "Mini Projects",
-
-            description:
-              project.shortDescription || project.description || "",
-
-            technologies: project.technologies || [],
-            github: project.githubUrl || "",
-            live: project.liveUrl || "",
-            thumbnail: project.thumbnail || "",
-            featured: project.isFeatured,
-            isStatic: false,
-          }));
-
-        if (active) {
-          // Keep backend projects and append static Hishabio.
-          const combinedProjects = [
-            ...backendProjects,
-            staticProjects[0],
-          ].map((project, index) => ({
-            ...project,
-            number: String(index + 1).padStart(2, "0"),
-          }));
-
-          setProjects(combinedProjects);
-        }
-      } catch (error) {
-        console.error("Projects loading error:", error);
-
-        if (active) {
-          // If backend fails, Hishabio still remains visible.
-          setProjects(
-            staticProjects.map((project, index) => ({
-              ...project,
-              number: String(index + 1).padStart(2, "0"),
-            })),
-          );
-        }
-      } finally {
-        if (active) {
-          setProjectsLoading(false);
-        }
-      }
-    };
-
-    fetchProjects();
-
-    return () => {
-      active = false;
-    };
+    setProjects(
+      staticProjects.map((project, index) => ({
+        ...project,
+        number: String(index + 1).padStart(2, "0"),
+      })),
+    );
+    setProjectsLoading(false);
   }, []);
 
   /* =========================================
