@@ -42,9 +42,9 @@ const hishabioProject = {
     "Hishabio is a full-stack MERN application designed to simplify shared expense management. Users can create households, add expenses, manage members, track individual contributions, view spending analytics, and record settlements through a centralized dashboard.",
 
   technologies: [
-    "React 19",
+    "React",
     "JavaScript",
-    "Tailwind CSS v4",
+    "Tailwind CSS",
     "Vite",
     "Node.js",
     "Express.js",
@@ -60,8 +60,12 @@ const hishabioProject = {
   liveUrl: "https://myhishabio.vercel.app",
   githubUrl: "https://github.com/salmanfarshi-dev/Hishabio",
 
-  thumbnail: "",
-  images: [],
+  thumbnail: "/hishabio (1).png",
+  images: [
+     "/hishabio (2).png",
+      "/hishabio (3).png",
+       "/hishabio (4).png"
+  ],
 };
 
 // --------------------------------------------------
