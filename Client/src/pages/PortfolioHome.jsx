@@ -27,35 +27,55 @@ import {
 import Footer from "../components/Footer";
 import { FiGithub, FiLinkedin } from "react-icons/fi";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 /* =========================================
    STATIC PROJECTS
-   Add frontend-only projects here.
+   These remain visible even without a deployed backend.
 ========================================= */
 
 const staticProjects = [
   {
+    id: "waitless-static",
+    slug: "waitless",
+    name: "WaitLess - Live Queue Management",
+    category: "Full Stack",
+    description:
+      "A live queue management platform designed to reduce waiting time and help users manage queues more efficiently.",
+    technologies: ["React", "JavaScript", "Node.js", "Express.js", "MongoDB"],
+    github: "https://github.com/salmanfarshi-dev/WaitLess-Live-Queue-Management",
+    live: "",
+    thumbnail: "",
+    featured: true,
+    isStatic: true,
+  },
+  {
     id: "hishabio-static",
     slug: "hishabio",
-    name: "Hishabio",
+    name: "Hishabio - Shared Expense Management",
     category: "Full Stack",
     description:
       "A full-stack shared expense management platform that helps families, friends, and roommates manage group expenses, split bills, track balances, and record settlements with ease.",
     technologies: [
-      "React",
-      "JavaScript",
-      "Tailwind CSS",
-      "Node.js",
-      "Express.js",
-      "MongoDB",
-      "Mongoose",
-      "JWT",
-      "Cloudinary",
-      "Recharts",
+      "React", "JavaScript", "Tailwind CSS", "Node.js", "Express.js",
+      "MongoDB", "Mongoose", "JWT", "Cloudinary", "Recharts",
     ],
     github: "https://github.com/salmanfarshi-dev/Hishabio",
     live: "https://myhishabio.vercel.app",
+    thumbnail: "",
+    featured: true,
+    isStatic: true,
+  },
+  {
+    id: "yumora-static",
+    slug: "yumora",
+    name: "Yumora - Food Ecommerce Platform",
+    category: "Frontend",
+    description:
+      "A modern food e-commerce experience with a responsive interface and product-focused shopping flow.",
+    technologies: ["React", "JavaScript", "Tailwind CSS", "Vite"],
+    github: "https://github.com/salmanfarshi-dev/Yumora",
+    live: "https://yumora-project.vercel.app/",
     thumbnail: "",
     featured: true,
     isStatic: true,
@@ -174,6 +194,7 @@ const PortfolioHome = () => {
     let active = true;
 
     const fetchResume = async () => {
+      if (!API_URL) return;
       try {
         const response = await fetch(`${API_URL}/resume`);
         const data = await response.json().catch(() => ({}));
@@ -218,6 +239,14 @@ const PortfolioHome = () => {
     let active = true;
 
     const fetchProjects = async () => {
+      if (!API_URL) {
+        setProjects(staticProjects.map((project, index) => ({
+          ...project,
+          number: String(index + 1).padStart(2, "0"),
+        })));
+        setProjectsLoading(false);
+        return;
+      }
       try {
         const response = await fetch(`${API_URL}/projects`);
         const data = await response.json().catch(() => ({}));
@@ -336,6 +365,16 @@ const PortfolioHome = () => {
       setContactStatus({
         type: "error",
         text: "Please fill in all fields.",
+      });
+      return;
+    }
+
+    if (!API_URL) {
+      const mailto = `mailto:sfarshi222@gmail.com?subject=${encodeURIComponent(subject.trim())}&body=${encodeURIComponent(`Name: ${name.trim()}\\nEmail: ${email.trim()}\\n\\n${message.trim()}`)}`;
+      window.location.href = mailto;
+      setContactStatus({
+        type: "success",
+        text: "Your email app is opening so you can send your message.",
       });
       return;
     }
