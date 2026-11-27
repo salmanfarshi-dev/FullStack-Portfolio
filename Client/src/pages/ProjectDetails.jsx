@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Code2,
   Database,
+  GraduationCap,
   ExternalLink,
   Layers3,
   Lightbulb,
@@ -59,6 +60,35 @@ const hishabioProject = {
   liveUrl: "https://myhishabio.vercel.app",
   githubUrl: "https://github.com/salmanfarshi-dev/Hishabio",
 
+  thumbnail: "",
+  images: [],
+};
+
+// --------------------------------------------------
+// STATIC STUDENTDESK PROJECT
+// Frontend-only, local-first student productivity dashboard
+// --------------------------------------------------
+
+const studentDeskProject = {
+  title: "StudentDesk",
+  slug: "studentdesk",
+  category: "frontend",
+  shortDescription:
+    "A local-first student productivity dashboard that helps students organize academic activities, track progress, and manage their study routines in one place.",
+  description:
+    "StudentDesk is a React and JavaScript student productivity dashboard. It keeps academic records in the browser with IndexedDB, so data created in the app remains available after refresh without requiring a separate application backend.",
+  technologies: [
+    "React 19",
+    "JavaScript",
+    "Vite",
+    "React Router",
+    "IndexedDB",
+    "Recharts",
+    "Lucide React",
+    "PWA",
+  ],
+  liveUrl: "https://student-desk-rust.vercel.app",
+  githubUrl: "https://github.com/salmanfarshi-dev/StudentDesk",
   thumbnail: "",
   images: [],
 };
@@ -212,6 +242,120 @@ const yumoraDetails = {
       title: "API Integration",
       description:
         "Fetching external product data and managing loading and error states.",
+    },
+  ],
+};
+
+// --------------------------------------------------
+// STUDENTDESK EXTENDED DETAILS
+// --------------------------------------------------
+
+const studentDeskDetails = {
+  overview:
+    "StudentDesk is a local-first student productivity dashboard designed to bring everyday academic planning tools together. Students can organize subjects and class routines, track attendance, calculate GPA and CGPA, manage exams and assignments, take notes, set goals, and review progress through analytics. Its academic data is stored in the browser using IndexedDB.",
+  problem:
+    "Students often need separate tools to manage subjects, schedules, attendance, deadlines, study sessions, notes, and academic progress. Keeping these activities organized across different places can make daily planning harder.",
+  solution:
+    "StudentDesk brings academic organization and study productivity tools into one responsive dashboard, with browser-based data persistence so saved records remain available after refresh.",
+  features: [
+    "Dashboard backed by saved local data",
+    "Create, edit, delete, search, and view subjects",
+    "Weekly class routine management",
+    "Present and absent attendance tracking",
+    "Attendance target percentage with status indicators",
+    "GPA and CGPA calculator with previous-semester calculation",
+    "Editable grade points",
+    "Exam management with live countdown",
+    "Task management with completion, search, and filters",
+    "Assignment status and progress tracking",
+    "Monthly calendar for deadlines and academic events",
+    "Study goals with progress tracking",
+    "Study timer with 25/5, 50/10, and custom sessions",
+    "Notes with tags, search, pin, and favorite options",
+    "Analytics based on saved sessions, tasks, and attendance",
+    "Global search and Ctrl+K command palette",
+    "Dark, light, and system theme",
+    "Validated JSON data export and import",
+    "Clear local data with confirmation",
+    "Responsive desktop, tablet, and mobile layouts",
+    "PWA manifest and service worker",
+  ],
+  frontendArchitecture: [
+    {
+      title: "React Application",
+      description:
+        "A React 19 application written in JavaScript and built with Vite.",
+    },
+    {
+      title: "Pages & Routing",
+      description:
+        "React Router organizes the dashboard and feature pages, including subjects, subject details, routine, attendance, GPA, exams, tasks, assignments, calendar, goals, timer, notes, analytics, and settings.",
+    },
+    {
+      title: "Reusable Components",
+      description:
+        "Shared layout and UI components provide consistent navigation, page structure, and reusable interface elements.",
+    },
+    {
+      title: "Application State",
+      description:
+        "The application context connects feature pages with shared application state and the browser persistence layer.",
+    },
+    {
+      title: "Charts & Icons",
+      description:
+        "Recharts presents academic analytics, while Lucide React provides interface icons.",
+    },
+    {
+      title: "Progressive Web App",
+      description:
+        "A web app manifest and service worker provide the PWA foundation.",
+    },
+  ],
+  backendArchitecture: [
+    {
+      title: "Local-First Architecture",
+      description:
+        "StudentDesk does not use a separate Node.js, Express, or remote application backend. Academic records are managed locally in the browser.",
+    },
+    {
+      title: "Application Data Layer",
+      description:
+        "Feature pages use the application context, and the context communicates with the IndexedDB persistence layer.",
+    },
+  ],
+  database: [
+    {
+      title: "IndexedDB",
+      description:
+        "Browser-based storage keeps academic records created in the application available after page refresh.",
+    },
+    {
+      title: "Local Data Management",
+      description:
+        "The application supports validated JSON export and import, along with a confirmation step before clearing local data.",
+    },
+  ],
+  challenges: [
+    {
+      title: "Browser-Based Persistence",
+      description:
+        "Organizing academic records through IndexedDB so that data created in the interface remains available after refresh.",
+    },
+    {
+      title: "Multiple Academic Workflows",
+      description:
+        "Bringing subjects, routines, attendance, exams, tasks, assignments, notes, and goals together in one application.",
+    },
+    {
+      title: "Progress Tracking",
+      description:
+        "Presenting attendance, study sessions, tasks, and academic activity through summaries and analytics.",
+    },
+    {
+      title: "Responsive Experience",
+      description:
+        "Supporting desktop, tablet, and mobile layouts across the dashboard and its feature pages.",
     },
   ],
 };
@@ -475,7 +619,9 @@ export default function ProjectDetails() {
       ? hishabioProject
       : normalizedRouteSlug === "yumora"
         ? yumoraProject
-        : null;
+        : normalizedRouteSlug === "studentdesk"
+          ? studentDeskProject
+          : null;
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -567,11 +713,16 @@ export default function ProjectDetails() {
   const isHishabio =
     normalizedSlug.startsWith("hishabio");
 
+  const isStudentDesk =
+    normalizedSlug.startsWith("studentdesk");
+
   const selectedDetails = isHishabio
     ? hishabioDetails
     : isYumora
       ? yumoraDetails
-      : null;
+      : isStudentDesk
+        ? studentDeskDetails
+        : null;
 
   const technologies =
     project.technologies?.length > 0
@@ -736,6 +887,11 @@ export default function ProjectDetails() {
                 <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-[#132c35] to-[#17152c] p-8 text-center">
                   {isHishabio ? (
                     <Wallet
+                      size={60}
+                      className="text-cyan-400"
+                    />
+                  ) : isStudentDesk ? (
+                    <GraduationCap
                       size={60}
                       className="text-cyan-400"
                     />
