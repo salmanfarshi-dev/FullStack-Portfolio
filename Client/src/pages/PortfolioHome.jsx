@@ -501,196 +501,187 @@ const PortfolioHome = () => {
       <main className="relative z-10">
         {/* Hero Section */}
 
-        <section
-          id="home"
-          className="scroll-mt-20 relative flex min-h-screen items-center px-5 pb-20 pt-32 sm:px-8 lg:px-10"
+       
+
+
+
+<section
+  id="home"
+  className="relative flex min-h-screen items-center overflow-hidden px-5 py-28 sm:px-8 lg:px-10"
+>
+  {/* Background Glow */}
+  <div className="pointer-events-none absolute -left-40 top-10 h-[450px] w-[450px] rounded-full bg-cyan-500/[0.08] blur-[140px]" />
+  <div className="pointer-events-none absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-blue-500/[0.10] blur-[150px]" />
+
+  <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8">
+
+    {/* LEFT: INTRODUCTION */}
+    <motion.div
+      initial={{ opacity: 0, x: -40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.9 }}
+      className="relative z-20 text-center lg:text-left"
+    >
+      {/* Availability */}
+      <div className="mb-7 inline-flex items-center gap-3 rounded-full border border-cyan-400/30 bg-cyan-400/[0.06] px-4 py-2">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-400" />
+        </span>
+        <span className="text-sm font-medium text-slate-200">
+          Hello, I'm
+        </span>
+      </div>
+
+      {/* Name */}
+      <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-[76px]">
+        Salman{" "}
+        <span className="bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
+          Farshi
+        </span>
+      </h1>
+
+      {/* Role */}
+      <h2 className="mt-5 text-2xl font-semibold text-slate-100 sm:text-3xl">
+        Full Stack{" "}
+        <span className="text-cyan-400">Developer</span>
+      </h2>
+
+      <p className="mt-6 max-w-xl text-base leading-8 text-slate-400 sm:text-lg lg:leading-9">
+        I build modern, responsive and user-focused web experiences.
+        I enjoy turning ideas into functional applications and
+        continuously expanding my skills across frontend and backend
+        development.
+      </p>
+
+      {/* Buttons */}
+      <div className="mt-9 flex flex-wrap justify-center gap-4 lg:justify-start">
+        <button
+          onClick={() => scrollToSection("projects")}
+          className="group flex items-center gap-3 rounded-full bg-cyan-400 px-7 py-4 font-bold text-[#06111b] shadow-lg shadow-cyan-400/20 transition duration-300 hover:-translate-y-1 hover:bg-cyan-300 hover:shadow-cyan-400/40"
         >
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-16 lg:grid-cols-[1.2fr_0.8fr]">
-            <motion.div initial="hidden" animate="visible" variants={fadeUp}>
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/[0.07] px-4 py-2">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400" />
-                <span className="text-xs font-medium tracking-wide text-cyan-300 sm:text-sm">
-                  Available for Opportunities
-                </span>
-              </div>
+          View My Work
+          <ArrowUpRight
+            size={19}
+            className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+          />
+        </button>
 
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-                Hello, I'm
-              </p>
-
-              <h1 className="text-5xl font-extrabold leading-[1.12] tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl">
-                Salman
-                <br />
-                <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
-                  Farshi.
-                </span>
-              </h1>
-
-              <h2 className="mt-7 text-xl font-semibold text-slate-200 sm:text-2xl">
-                Full Stack Developer
-                <span className="text-cyan-400"> | </span>
-                MERN Stack
-              </h2>
-
-              <p className="mt-6 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
-                I build modern, responsive and user-focused web experiences. I
-                enjoy turning ideas into functional applications and
-                continuously expanding my skills across frontend and backend
-                development.
-              </p>
-
-              <div className="mt-10 flex flex-wrap gap-4">
-                <button
-                  onClick={() => scrollToSection("projects")}
-                  className="group flex items-center gap-3 rounded-xl bg-cyan-400 px-7 py-4 font-bold text-[#080d16] transition hover:bg-cyan-300"
-                >
-                  Explore My Work
-                  <ArrowUpRight
-                    size={19}
-                    className="transition group-hover:translate-x-1 group-hover:-translate-y-1"
-                  />
-                </button>
-
-               
-
-                {resume && (
-                  <a
-                    href='/frontend-resume.pdf'
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={handleResumeDownload}
-                    className="flex items-center gap-3 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-7 py-4 font-semibold text-cyan-300 transition hover:bg-cyan-400 hover:text-[#080d16]"
-                    aria-label="Download CV PDF"
-                  >
-                    <Download size={18} />
-                    Download CV
-                  </a>
-                )}
-              </div>
-
-              <div className="mt-12 flex items-center gap-5">
-                <a
-                  href="https://github.com/salmanfarshi-dev"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="GitHub"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <FiGithub size={20} />
-                </a>
-
-                <a
-                  href="https://www.linkedin.com/in/salmanfarshi-dev/"
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="LinkedIn"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <FiLinkedin size={20} />
-                </a>
-
-                <a
-                  href="mailto:sfarshi222@gmail.com"
-                  aria-label="Email"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-slate-400 transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <Mail size={19} />
-                </a>
-              </div>
-            </motion.div>
-
-            {/* Hero Visual */}
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, x: 30 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              className="relative mx-auto w-full max-w-md"
-            >
-              <div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-cyan-400/20 via-blue-500/10 to-violet-500/20 blur-2xl" />
-
-              <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#101927] p-6 shadow-2xl shadow-cyan-950/30 sm:p-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-2">
-                    <span className="h-3 w-3 rounded-full bg-red-400" />
-                    <span className="h-3 w-3 rounded-full bg-yellow-400" />
-                    <span className="h-3 w-3 rounded-full bg-green-400" />
-                  </div>
-
-                  <span className="text-xs text-slate-500">developer.js</span>
-                </div>
-
-                <div className="mt-10 flex flex-col items-center text-center">
-                  <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-cyan-400/30 bg-gradient-to-br from-cyan-400/20 to-violet-500/20">
-                    <div className="flex h-28 w-28 items-center justify-center rounded-full bg-[#0b1421] text-5xl font-black text-cyan-300">
-                      SF
-                    </div>
-
-                    <span className="absolute bottom-1 right-2 h-5 w-5 rounded-full border-4 border-[#101927] bg-green-400" />
-                  </div>
-
-                  <h3 className="mt-7 text-2xl font-bold">Salman Farshi</h3>
-
-                  <p className="mt-2 text-sm text-cyan-300">
-                    Full Stack Developer
-                  </p>
-
-                  <div className="mt-8 w-full rounded-2xl border border-white/[0.07] bg-[#080f1b] p-5 text-left font-mono text-sm leading-8">
-                    <p>
-                      <span className="text-violet-400">const</span>{" "}
-                      <span className="text-cyan-300">developer</span> = {"{"}
-                    </p>
-
-                    <p className="pl-5 text-slate-400">
-                      name:{" "}
-                      <span className="text-green-300">"Salman Farshi"</span>,
-                    </p>
-
-                    <p className="pl-5 text-slate-400">
-                      role: <span className="text-green-300">"Full Stack"</span>,
-                    </p>
-
-                    <p className="pl-5 text-slate-400">
-                      passion:{" "}
-                      <span className="text-green-300">
-                        "Building Web Apps"
-                      </span>
-                    </p>
-
-                    <p className="text-slate-300">{"};"}</p>
-                  </div>
-
-                  <div className="mt-6 flex w-full items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
-                    <span className="text-xs text-slate-400">
-                      Current Focus
-                    </span>
-                    <span className="text-xs font-semibold text-cyan-300">
-                      MERN Stack
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -right-5 top-20 hidden rounded-2xl border border-white/10 bg-[#111c2b] p-4 shadow-xl sm:block">
-                <Code2 className="text-cyan-400" size={25} />
-              </div>
-
-              <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border border-white/10 bg-[#111c2b] p-4 shadow-xl sm:block">
-                <Sparkles className="text-violet-400" size={25} />
-              </div>
-            </motion.div>
-          </div>
-
-          <button
-            onClick={() => scrollToSection("about")}
-            className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-slate-500 transition hover:text-cyan-400 md:flex"
+        {resume && (
+          <a
+            href="/frontend-resume.pdf"
+            target="_blank"
+            rel="noreferrer"
+            onClick={handleResumeDownload}
+            className="flex items-center gap-3 rounded-full border border-cyan-400/60 px-7 py-4 font-semibold text-slate-200 transition duration-300 hover:-translate-y-1 hover:bg-cyan-400 hover:text-[#06111b]"
           >
-            <span className="text-[10px] uppercase tracking-[0.25em]">
-              Scroll to explore
-            </span>
-            <ArrowDown size={19} className="animate-bounce" />
-          </button>
-        </section>
+            <Download size={18} />
+            Download CV
+          </a>
+        )}
+      </div>
+
+      {/* Social Links */}
+      <div className="mt-9 flex items-center justify-center gap-4 lg:justify-start">
+        <a
+          href="https://github.com/salmanfarshi-dev"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="GitHub"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700/80 text-slate-300 transition duration-300 hover:border-cyan-400 hover:bg-cyan-400/10 hover:text-cyan-400"
+        >
+          <FiGithub size={20} />
+        </a>
+
+        <a
+          href="https://www.linkedin.com/in/salmanfarshi-dev/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="LinkedIn"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700/80 text-slate-300 transition duration-300 hover:border-cyan-400 hover:bg-cyan-400/10 hover:text-cyan-400"
+        >
+          <FiLinkedin size={20} />
+        </a>
+
+        <a
+          href="mailto:sfarshi222@gmail.com"
+          aria-label="Email"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700/80 text-slate-300 transition duration-300 hover:border-cyan-400 hover:bg-cyan-400/10 hover:text-cyan-400"
+        >
+          <Mail size={19} />
+        </a>
+      </div>
+
+      {/* Background Typography */}
+      <div className="pointer-events-none absolute -bottom-28 -left-4 -z-10 hidden select-none lg:block">
+        <span className="text-[100px] font-black uppercase tracking-tight text-transparent opacity-[0.055] [ -webkit-text-stroke:1px_#67e8f9 ]">
+          DEVELOPER
+        </span>
+      </div>
+    </motion.div>
+
+    {/* RIGHT: IMAGE COMPOSITION */}
+    <motion.div
+      initial={{ opacity: 0, x: 45, scale: 0.96 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ duration: 1, delay: 0.2 }}
+      className="relative mx-auto w-full max-w-[680px]"
+    >
+      <div className="relative mx-auto aspect-[1.08/1] w-full">
+
+        {/* Large Cyan Background Glow */}
+        <div className="absolute left-[19%] top-[19%] h-[65%] w-[65%] rounded-full bg-cyan-400/90 blur-[1px]" />
+
+        <div className="absolute left-[14%] top-[14%] h-[75%] w-[75%] rounded-full bg-cyan-400/30 blur-[65px]" />
+
+        <div className="absolute left-[24%] top-[22%] h-[58%] w-[58%] rounded-full border border-cyan-300/20" />
+
+        {/* Geometric Background Lines */}
+        <div className="absolute left-[9%] top-[27%] h-[47%] w-[82%] rotate-[-12deg] border border-cyan-400/20" />
+
+        <div className="absolute right-[13%] top-[17%] h-[55%] w-[1px] bg-gradient-to-b from-cyan-400/70 via-cyan-400/10 to-transparent" />
+
+        <div className="absolute right-[5%] top-[33%] h-[1px] w-[70%] rotate-[-12deg] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+
+        {/* Decorative Star */}
+        <div className="absolute right-[18%] top-[20%] z-20">
+          <span className="absolute h-5 w-5 animate-ping rounded-full bg-cyan-400/20" />
+          <span className="relative block h-5 w-5 text-2xl leading-4 text-cyan-300">✦</span>
+        </div>
+
+        {/* Image Glow Shadow */}
+        <div className="absolute bottom-[5%] left-[22%] h-[20%] w-[58%] rounded-full bg-cyan-400/30 blur-[55px]" />
+
+        {/* Your Image */}
+        <div className="absolute inset-0 z-10 flex items-end justify-center">
+          <img
+            src="/salman-farshi.png"
+            alt="Salman Farshi"
+            className="h-[96%] w-full object-contain object-bottom drop-shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
+          />
+        </div>
+
+       
+
+        {/* Signature */}
+        <div className="absolute bottom-[22%] right-[1%] z-30 rotate-[-8deg] sm:right-[2%]">
+          <p className="font-serif text-3xl italic tracking-wide text-slate-200 drop-shadow-lg sm:text-4xl">
+            Salman
+          </p>
+          <p className="ml-8 font-serif text-3xl italic tracking-wide text-slate-200 drop-shadow-lg sm:text-4xl">
+            Farshi
+          </p>
+          <div className="ml-8 mt-2 h-[2px] w-24 rotate-[-13deg] bg-cyan-400 shadow-[0_0_12px_#22d3ee]" />
+        </div>
+
+      </div>
+    </motion.div>
+  </div>
+</section>
+
+
+
+
 
         {/* About Section */}
 
