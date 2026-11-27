@@ -551,17 +551,11 @@ const PortfolioHome = () => {
                   />
                 </button>
 
-                <button
-                  onClick={() => scrollToSection("contact")}
-                  className="flex items-center gap-3 rounded-xl border border-white/15 px-7 py-4 font-semibold text-white transition hover:border-cyan-400/50 hover:text-cyan-400"
-                >
-                  <Mail size={18} />
-                  Contact Me
-                </button>
+               
 
                 {resume && (
                   <a
-                    href={resume.fileUrl}
+                    href='/frontend-resume.pdf'
                     target="_blank"
                     rel="noreferrer"
                     onClick={handleResumeDownload}
