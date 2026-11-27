@@ -53,6 +53,23 @@ const staticProjects = [
     isStatic: true,
   },
   {
+    id: "studentdesk-static",
+    slug: "studentdesk",
+    name: "StudentDesk - Student Productivity Dashboard",
+    category: "Frontend",
+    description:
+      "A local-first student productivity dashboard for managing subjects, class routines, attendance, GPA, exams, tasks, assignments, notes, study goals, and academic progress.",
+    technologies: [
+      "React 19", "JavaScript", "Vite", "React Router",
+      "IndexedDB", "Recharts", "Lucide React", "PWA",
+    ],
+    github: "https://github.com/salmanfarshi-dev/StudentDesk",
+    live: "https://student-desk-rust.vercel.app",
+    thumbnail: "",
+    featured: true,
+    isStatic: true,
+  },
+  {
     id: "yumora-static",
     slug: "yumora",
     name: "Yumora - Food Ecommerce Platform",
